@@ -57,15 +57,16 @@ pollination16 <- pollination16 %>%
 #### READ IN DATA 2017 ####
 
 # PHENOLOGY
-pheno17 <- read.csv2("Data_plant_pollinator_Finse_2016_2017/2017/17-10-06_Phenology.csv", header = FALSE, sep = ";", stringsAsFactors=FALSE)
+pheno17 <- read_csv2("Data/17-10-06_Phenology.csv", col_names = FALSE, col_types = NULL)
 pheno17 <- pheno17[-c(155:186),] # remove F09 and F10
-pheno17 <- as_data_frame(t(pheno17)) # transpose data
-names(pheno17) <- pheno17[1,] # first column = name
+pheno17 <- as_tibble(t(pheno17)) # transpose data
+colnames(pheno17) <- pheno17[1,] # first column = name
 
 pheno17 <- pheno17 %>% 
   slice(-1) %>% # remove first column
   gather(key = site, value = flowering, -Date, -Time, -Weather, -Name) %>% 
-  filter(flowering != "") %>% 
+  #as_tibble() %>% # lage en tabel
+  #filter(!is.na(flowering)) %>%
   #mutate(Time = substr(Time, 1, 5)) %>% # do we need time?
   mutate(date = dmy(Date)) %>% 
   select(-Date, -Time) %>% 
