@@ -21,7 +21,7 @@ pheno16 <- pheno16 %>%
   slice(-1) %>% # remove first column
   gather(key = site, value = flowering, -Dato, -Tid, -Vaer, -Hvem) %>% 
   as_tibble() %>% # lage en tabel
-  filter(flowering != "") %>% 
+  filter(!is.na(flowering)) %>% 
   mutate(date = dmy(Dato)) %>% # do we need time?
   select(-Dato, -Tid) %>% 
   mutate(flowering = as.numeric(flowering)) %>% 
@@ -33,12 +33,13 @@ pheno16 <- pheno16 %>%
 
 
 # POLLINATOR OBSERVATIONS
-pollination16 <- read.csv("Data_plant_pollinator_Finse_2016_2017/2016/RanunculusPollinator.csv", header = TRUE, sep = ";", stringsAsFactors=FALSE)
+pollination16 <- read_csv2("Data/RanunculusPollinator.csv", col_names = TRUE, col_types = NULL)
+
 pollination16 <- pollination16 %>%
   as_tibble() %>% 
-  filter(!Tid == "") %>% # slette alle koloner med Na
+  filter(!Tid == "") %>% # slette alle kolloner med Na
   # Fix date variables
-  mutate(date = dmy_hm(paste(Dato, Tid))) %>%# lime sammen dato å tid
+  mutate(date = dmy_hms(paste(Dato, Tid))) %>%# lime sammen dato å tid
   mutate(minutes = (floor(minute(date)/10)*10)) %>%
   mutate(date = ymd_hm(paste0(format(date, "%Y-%m-%d %H:"), minutes))) %>% # making 10 minutes steps
   mutate(year = year (date), day = as.Date(date,format="%Y-%m-%d")) %>%
