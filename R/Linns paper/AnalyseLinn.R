@@ -1,13 +1,13 @@
 
-source("RanunculusData.R")
+source("1_ImportData.R")
 library("lme4")
 library("broom")
 library("nlme")
 
 #install.packages("devtools")
 #library("devtools")
-#require(devtools)
-#install_version("lme4", version = "1.1-10", repos = "http://cran.us.r-project.org")
+
+
 
 ##################################
 ######## Biomasse analyser #######
