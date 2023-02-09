@@ -68,7 +68,7 @@ pheno17 <- pheno17[-c(155:186),] # remove F09 and F10
 pheno17 <- as_tibble(t(pheno17)) # transpose data
 colnames(pheno17) <- pheno17[1,] # first column = name
 
-pheno17_1 <- pheno17 %>% 
+pheno17 <- pheno17 %>% 
   slice(-1) %>% # remove first column
   gather(key = site, value = flowering, -Date, -Time, -Weather, -Name) %>% 
   as_tibble() %>% # lage en tabel
@@ -76,12 +76,13 @@ pheno17_1 <- pheno17 %>%
   mutate(stage = factor(substring(site, 1,1))) %>% 
   mutate(plot = factor(substring(site, 4,4))) %>% 
   mutate(site = factor(substring(site, 2,3))) %>% 
-  
   #from here the dataset starts to get weird
   mutate(flowering = as.numeric(flowering)) %>% 
   filter(!is.na(flowering)) %>% ##Puts site names in flowering column (but works on 16 dataset)
   mutate(date = dmy(Date)) %>% 
-  mutate(day = as.Date(date,format="%Y-%m-%d"), year = year(date)) %>%
+   mutate(day = yday(date)) %>%
+  mutate(year = year(date)) %>%
+  #mutate(day = as.Date(date,format="%Y-%m-%d"), year = year(date)) %>%
   select(-Date, -Time) %>% 
   rename(weather = Weather, name = Name)
 
@@ -94,7 +95,7 @@ pollination17 <- pollination17 %>%
   as_tibble() %>% 
   filter(!Time == "") %>% # slette alle koloner med Na
   # Fix date variables
-  mutate(date = dmy_hm(paste(Date, Time))) %>%# lime sammen dato å tid
+  mutate(date = dmy_hms(paste(Date, Time))) %>%# lime sammen dato å tid
   mutate(minutes = (floor(minute(date)/10)*10)) %>% # round all the dates to 10 minutes
   mutate(date = ymd_hm(paste0(format(date, "%Y-%m-%d %H:"), minutes))) %>% # making 10 minutes steps
   mutate(year = year (date), day = as.Date(date, format="%Y-%m-%d")) %>%
@@ -178,7 +179,8 @@ phenology <- pheno16 %>%
 
 ### POLLINATION
 pollination <- pollination16 %>% 
-  bind_rows(pollination17) %>% 
+  bind_rows(pollination17 %>% 
+              mutate(day = as.numeric(day))) %>% 
   left_join(sites, by = c("stage", "site")) %>%  # add area of each site
   # add climate data
   #left_join(Temperature, by = c("date" = "date", "stage" = "stage", "site" = "site"))
@@ -298,7 +300,7 @@ Period <- Biomass %>%
   group_by(Year, BlockID) %>% 
   summarise(MinDate = min(Date1, na.rm = TRUE), MaxDate = max(Collected, na.rm = TRUE))
 
-MASL <- read.csv("Data_plant_pollinator_Finse_2016_2017/MASL.csv", header = TRUE, sep = ";", stringsAsFactors=FALSE)
+MASL <- read_csv2("Data/MASL.csv", col_names = TRUE, col_types = NULL)
 
 WeatherAndBiomass <- Biomass %>% 
   select(Year, Stage, siteID, BlockID, Plant, Treatment, Biomass, Seed_mass, Seed_number, Ovule_number, Tot_Ovule, Seed_potential, MeanFlowers, MeanVisit) %>% 
