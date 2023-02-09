@@ -11,7 +11,7 @@ library("ggplot2")
 
 #### READ IN DATA ####
 getwd()
-setwd("C:/Users/linn/Dropbox/mismatch/Data")
+setwd("C:/Users/linn/Dropbox/Mismatch/Data")
 
 # FLOWERS
 flower <- read.csv("RANfenologi.csv", header = FALSE, sep = ";", stringsAsFactors=FALSE)
