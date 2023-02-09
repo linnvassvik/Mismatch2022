@@ -44,7 +44,8 @@ pollination16 <- pollination16 %>%
   mutate(date = dmy_hms(paste(Dato, Tid))) %>%# lime sammen dato å tid
   mutate(minutes = (floor(minute(date)/10)*10)) %>%
   mutate(date = ymd_hm(paste0(format(date, "%Y-%m-%d %H:"), minutes))) %>% # making 10 minutes steps
-  mutate(year = year (date), day = as.Date(date,format="%Y-%m-%d")) %>% 
+  mutate(day = yday(date)) %>%
+  mutate(year = year(date)) %>% 
   # Fix  other variables
   mutate(stage = substring(Site, 1,1), site = substring(Site, 2,3)) %>% # lage to nye variabler, stage og site
   mutate(stage = factor(stage, levels = c("E", "M", "L")), site = factor(site)) %>%  # bestemme rekkefölgen for stage
@@ -75,7 +76,6 @@ pheno17_1 <- pheno17 %>%
   mutate(stage = factor(substring(site, 1,1))) %>% 
   mutate(plot = factor(substring(site, 4,4))) %>% 
   mutate(site = factor(substring(site, 2,3))) %>% 
-
   
   #from here the dataset starts to get weird
   mutate(flowering = as.numeric(flowering)) %>% 
@@ -89,7 +89,7 @@ pheno17_1 <- pheno17 %>%
 # POLLINATOR OBSERVATIONS
 pollination17 <- read_csv2("Data/17-10-31_Pollinatorobservations.csv", col_names = TRUE, col_types = NULL)
 
-pollination17_1 <- pollination17 %>%
+pollination17 <- pollination17 %>%
   #select(-X,-wind.categories., -X.1, -X.2, -X.3, -X.4) %>% 
   as_tibble() %>% 
   filter(!Time == "") %>% # slette alle koloner med Na
