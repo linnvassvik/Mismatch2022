@@ -27,8 +27,10 @@ pheno16 <- pheno16 %>%
   mutate(flowering = as.numeric(flowering)) %>% 
   mutate(stage = factor(substring(site, 1,1))) %>% 
   mutate(plot = factor(substring(site, 4,4))) %>% 
-  mutate(site = factor(substring(site, 2,3))) %>% 
-  mutate(day = as.Date(date,format="%Y-%m-%d"), year = year(date)) %>% 
+  mutate(site = factor(substring(site, 2,3))) %>%
+  mutate(day = yday(date)) %>%
+  mutate(year = year(date)) %>% 
+  #mutate(day = as.Date(date,format="%Y-%m-%d"), year = year(date)) %>%  #denne fungerer ikke, men brukt koden over isteden for
   rename(weather = Vaer, name = Hvem)
 
 
@@ -42,16 +44,19 @@ pollination16 <- pollination16 %>%
   mutate(date = dmy_hms(paste(Dato, Tid))) %>%# lime sammen dato å tid
   mutate(minutes = (floor(minute(date)/10)*10)) %>%
   mutate(date = ymd_hm(paste0(format(date, "%Y-%m-%d %H:"), minutes))) %>% # making 10 minutes steps
-  mutate(year = year (date), day = as.Date(date,format="%Y-%m-%d")) %>%
+  mutate(year = year (date), day = as.Date(date,format="%Y-%m-%d")) %>% 
   # Fix  other variables
   mutate(stage = substring(Site, 1,1), site = substring(Site, 2,3)) %>% # lage to nye variabler, stage og site
   mutate(stage = factor(stage, levels = c("E", "M", "L")), site = factor(site)) %>%  # bestemme rekkefölgen for stage
-  mutate(fly = as.numeric(Fluer), other = as.numeric(andre)) %>% # make variables numeric
+  mutate(fly = as.numeric(Fluer)) %>%  
+  mutate(other = as.numeric(andre)) %>% # make variables numeric
   mutate(weather = plyr::mapvalues(sol.og.sky, c("overskyet","overskyet_littsol","sol_littsky","sol", "sol "), c("cloudy","cloudy_sun","sun_cloud","sun", "sun"))) %>% 
   mutate(wind = as.factor(vind)) %>% 
-  mutate(remark = paste(regn, sommerfugler)) %>% 
+  mutate(remark = paste(regn, sommerfugler)) %>% #hva gjør denne?
   select(-Tid, -Fluer, -Site, -Dato, -minutes, -sol.og.sky, -vind, -andre, -regn, -sommerfugler) # sletter her koloner ikke rekker, - betyr ta vekk
 
+str(pollination16)
+str(pollination17)
 ########################################################################
 
 #### READ IN DATA 2017 ####
@@ -62,26 +67,29 @@ pheno17 <- pheno17[-c(155:186),] # remove F09 and F10
 pheno17 <- as_tibble(t(pheno17)) # transpose data
 colnames(pheno17) <- pheno17[1,] # first column = name
 
-pheno17 <- pheno17 %>% 
+pheno17_1 <- pheno17 %>% 
   slice(-1) %>% # remove first column
   gather(key = site, value = flowering, -Date, -Time, -Weather, -Name) %>% 
-  #as_tibble() %>% # lage en tabel
-  #filter(!is.na(flowering)) %>%
-  #mutate(Time = substr(Time, 1, 5)) %>% # do we need time?
-  mutate(date = dmy(Date)) %>% 
-  select(-Date, -Time) %>% 
-  mutate(flowering = as.numeric(flowering)) %>% 
+  as_tibble() %>% # lage en tabel
+  mutate(Time = substr(Time, 1, 5)) %>% # do we need time?
   mutate(stage = factor(substring(site, 1,1))) %>% 
   mutate(plot = factor(substring(site, 4,4))) %>% 
   mutate(site = factor(substring(site, 2,3))) %>% 
+
+  
+  #from here the dataset starts to get weird
+  mutate(flowering = as.numeric(flowering)) %>% 
+  filter(!is.na(flowering)) %>% ##Puts site names in flowering column (but works on 16 dataset)
+  mutate(date = dmy(Date)) %>% 
   mutate(day = as.Date(date,format="%Y-%m-%d"), year = year(date)) %>%
+  select(-Date, -Time) %>% 
   rename(weather = Weather, name = Name)
 
 
 # POLLINATOR OBSERVATIONS
-pollination17 <- read.csv("Data_plant_pollinator_Finse_2016_2017/2017/17-10-31_Pollinatorobservations.csv", header = TRUE, sep = ";", stringsAsFactors=FALSE)
+pollination17 <- read_csv2("Data/17-10-31_Pollinatorobservations.csv", col_names = TRUE, col_types = NULL)
 
-pollination17 <- pollination17 %>%
+pollination17_1 <- pollination17 %>%
   #select(-X,-wind.categories., -X.1, -X.2, -X.3, -X.4) %>% 
   as_tibble() %>% 
   filter(!Time == "") %>% # slette alle koloner med Na
@@ -102,7 +110,8 @@ pollination17 <- pollination17 %>%
 ########################################################################
 
 ### IMPORT SITE AND CLIMATE DATA ###
-sites <- read_excel("Data_plant_pollinator_Finse_2016_2017/Sites.xlsx")
+sites <- read_excel("Data/Sites.xlsx")
+
 sites <- sites %>% 
   filter(!is.na(stage)) %>% # remove empty columns
   mutate(area = width * length) %>% 
@@ -124,7 +133,7 @@ snowmelt16 <- snomelt16 %>%
 
 #2017
 #importing snowmelt-dataset and joining with peak-data
-Date_snowmelt <- read_excel("Data_plant_pollinator_Finse_2016_2017/2017/Date_snowmelt.xlsx")
+Date_snowmelt <- read_excel("Data/Date_snowmelt.xlsx")
 
 Date_snowmelt <- Date_snowmelt %>% 
   mutate(doy = yday(Snowmelt_date)) %>% 
@@ -135,7 +144,7 @@ Date_snowmelt <- Date_snowmelt %>%
 ########################################################################
 
 ##### WEATHER THROUGHOUT SEASON #####
-weather16 <- read_excel("Data_plant_pollinator_Finse_2016_2017/2016/Finse_weather_2016.xlsx")
+Weather16 <- read_excel("Data/Finse_weather_2016.xlsx")
 colnames(weather16) <- iconv(colnames(weather16), "latin1", "ASCII", sub = "q")
 
 Weather16 <- weather16 %>% 
@@ -143,7 +152,7 @@ Weather16 <- weather16 %>%
   mutate(doy = yday(date))
 
 
-weather17 <- read_excel("Data_plant_pollinator_Finse_2016_2017/2017/Finse_weather.xlsx")
+Weather17 <- read_excel("Data/Finse_weather.xlsx")
 
 Weather <- weather17 %>% 
   mutate(precipitation = as.numeric(precipitation)) %>%
@@ -187,7 +196,7 @@ pollination <- pollination16 %>%
 ### READ IN HAND-POLLINATION, BIOMASS AND REPRODUCTIVE OUTPUT ###
 
 ### 2016
-biomass16 <- read_excel("Data/2016/17-12-01_BiomassAndSeed.xlsx", col_types = c("text", "text", "text", "text", "numeric", "numeric", "text", "date", "text", "date", "text", "date", "text", "date", "text"))
+biomass16 <- read_excel("Data/BiomassAndSeed_2016.xlsx", col_types = c("text", "text", "numeric", "numeric", "numeric", "numeric", "text", "date", "text", "date", "text", "date", "text", "date", "text"))
 
 ### SOME PROBLEM WITH 2 PLANTS WHERE THERE ARE 2 PLANTS!!!
 
@@ -208,7 +217,7 @@ biomass16 <- biomass16 %>%
 
 ### 2017
 #importing biomass data
-Biomass17 <- read_excel("Data/2017/Biomass.xlsx", col_types = c("text", "text", "text", "text", "text", "numeric", "numeric", "date", "text", "date", "text", "date", "text", "date", "text"))
+Biomass17 <- read_excel("Data/Biomass_2017.xlsx", col_types = c("text", "text", "text", "text", "text", "numeric", "numeric", "date", "text", "date", "text", "date", "text", "date", "text"))
 
 ### BY SITE ###
 Biomass17 <- Biomass17 %>% 
