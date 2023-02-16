@@ -13,7 +13,7 @@ pn <- . %>% print(n = Inf)
 #### READ IN DATA 2016 ####
 
 # PHENOLOGY
-pheno16 <- read_csv2("Data/RANfenologi.csv", col_names = FALSE, col_types = NULL)
+pheno16 <- read_csv2("Data_plant_pollinator_Finse_2016_2017/2016/RANfenologi.csv", col_names = FALSE, col_types = NULL)
 pheno16 <- as.data.frame(t(pheno16), col_names = FALSE) # transpose data
 names(pheno16) <- pheno16[1,] # first column = name
 
@@ -35,7 +35,7 @@ pheno16 <- pheno16 %>%
 
 
 # POLLINATOR OBSERVATIONS
-pollination16 <- read_csv2("Data/RanunculusPollinator.csv", col_names = TRUE, col_types = NULL)
+pollination16 <- read_csv2("Data_plant_pollinator_Finse_2016_2017/2016/RanunculusPollinator.csv", col_names = TRUE, col_types = NULL)
 
 pollination16 <- pollination16 %>%
   as_tibble() %>% 
@@ -56,14 +56,13 @@ pollination16 <- pollination16 %>%
   mutate(remark = paste(regn, sommerfugler)) %>% #hva gjør denne?
   select(-Tid, -Fluer, -Site, -Dato, -minutes, -sol.og.sky, -vind, -andre, -regn, -sommerfugler) # sletter her koloner ikke rekker, - betyr ta vekk
 
-str(pollination16)
-str(pollination17)
+
 ########################################################################
 
 #### READ IN DATA 2017 ####
 
 # PHENOLOGY
-pheno17 <- read_csv2("Data/17-10-06_Phenology.csv", col_names = FALSE, col_types = NULL)
+pheno17 <- read_csv2("Data_plant_pollinator_Finse_2016_2017/2017/17-10-06_Phenology.csv", col_names = FALSE, col_types = NULL)
 pheno17 <- pheno17[-c(155:186),] # remove F09 and F10
 pheno17 <- as_tibble(t(pheno17)) # transpose data
 colnames(pheno17) <- pheno17[1,] # first column = name
@@ -88,7 +87,7 @@ pheno17 <- pheno17 %>%
 
 
 # POLLINATOR OBSERVATIONS
-pollination17 <- read_csv2("Data/17-10-31_Pollinatorobservations.csv", col_names = TRUE, col_types = NULL)
+pollination17 <- read_csv2("Data_plant_pollinator_Finse_2016_2017/2017/17-10-31_Pollinatorobservations.csv", col_names = TRUE, col_types = NULL)
 
 pollination17 <- pollination17 %>%
   #select(-X,-wind.categories., -X.1, -X.2, -X.3, -X.4) %>% 
@@ -111,7 +110,7 @@ pollination17 <- pollination17 %>%
 ########################################################################
 
 ### IMPORT SITE AND CLIMATE DATA ###
-sites <- read_excel("Data/Sites.xlsx")
+sites <- read_excel("Data_plant_pollinator_Finse_2016_2017/Sites.xlsx")
 
 sites <- sites %>% 
   filter(!is.na(stage)) %>% # remove empty columns
@@ -134,7 +133,7 @@ snowmelt16 <- snomelt16 %>%
 
 #2017
 #importing snowmelt-dataset and joining with peak-data
-Date_snowmelt <- read_excel("Data/Date_snowmelt.xlsx")
+Date_snowmelt <- read_excel("Data_plant_pollinator_Finse_2016_2017/2017/Date_snowmelt.xlsx")
 
 Date_snowmelt <- Date_snowmelt %>% 
   mutate(doy = yday(Snowmelt_date)) %>% 
@@ -145,7 +144,7 @@ Date_snowmelt <- Date_snowmelt %>%
 ########################################################################
 
 ##### WEATHER THROUGHOUT SEASON #####
-Weather16 <- read_excel("Data/Finse_weather_2016.xlsx")
+weather16 <- read_excel("Data_plant_pollinator_Finse_2016_2017/2016/Finse_weather_2016.xlsx")
 colnames(weather16) <- iconv(colnames(weather16), "latin1", "ASCII", sub = "q")
 
 Weather16 <- weather16 %>% 
@@ -153,7 +152,7 @@ Weather16 <- weather16 %>%
   mutate(doy = yday(date))
 
 
-Weather17 <- read_excel("Data/Finse_weather.xlsx")
+weather17 <- read_excel("Data_plant_pollinator_Finse_2016_2017/2017/Finse_weather.xlsx")
 
 Weather <- weather17 %>% 
   mutate(precipitation = as.numeric(precipitation)) %>%
@@ -198,7 +197,7 @@ pollination <- pollination16 %>%
 ### READ IN HAND-POLLINATION, BIOMASS AND REPRODUCTIVE OUTPUT ###
 
 ### 2016
-biomass16 <- read_excel("Data/BiomassAndSeed_2016.xlsx", col_types = c("text", "text", "numeric", "numeric", "numeric", "numeric", "text", "date", "text", "date", "text", "date", "text", "date", "text"))
+biomass16 <- read_excel("Data_plant_pollinator_Finse_2016_2017/2016/17-12-01_BiomassAndSeed.xlsx", col_types = c("text", "text", "text", "text", "numeric", "numeric", "text", "date", "text", "date", "text", "date", "text", "date", "text"))
 
 ### SOME PROBLEM WITH 2 PLANTS WHERE THERE ARE 2 PLANTS!!!
 
@@ -219,7 +218,7 @@ biomass16 <- biomass16 %>%
 
 ### 2017
 #importing biomass data
-Biomass17 <- read_excel("Data/Biomass_2017.xlsx", col_types = c("text", "text", "text", "text", "text", "numeric", "numeric", "date", "text", "date", "text", "date", "text", "date", "text"))
+Biomass17 <- read_excel("Data_plant_pollinator_Finse_2016_2017/2017/Biomass.xlsx", col_types = c("text", "text", "text", "text", "text", "numeric", "numeric", "date", "text", "date", "text", "date", "text", "date", "text"))
 
 ### BY SITE ###
 Biomass17 <- Biomass17 %>% 
@@ -300,7 +299,7 @@ Period <- Biomass %>%
   group_by(Year, BlockID) %>% 
   summarise(MinDate = min(Date1, na.rm = TRUE), MaxDate = max(Collected, na.rm = TRUE))
 
-MASL <- read_csv2("Data/MASL.csv", col_names = TRUE, col_types = NULL)
+MASL <- read_csv2("Data_plant_pollinator_Finse_2016_2017/MASL.csv", col_names = TRUE, col_types = NULL)
 
 WeatherAndBiomass <- Biomass %>% 
   select(Year, Stage, siteID, BlockID, Plant, Treatment, Biomass, Seed_mass, Seed_number, Ovule_number, Tot_Ovule, Seed_potential, MeanFlowers, MeanVisit) %>% 
