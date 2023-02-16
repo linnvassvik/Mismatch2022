@@ -184,7 +184,7 @@ pollination <- pollination16 %>%
 ### READ IN HAND-POLLINATION, BIOMASS AND REPRODUCTIVE OUTPUT ###
 
 ### 2016
-biomass16 <- read_excel("Data/2016/17-12-01_BiomassAndSeed.xlsx", col_types = c("text", "text", "text", "text", "numeric", "numeric", "text", "date", "text", "date", "text", "date", "text", "date", "text"))
+biomass16 <- read_excel("Data_plant_pollinator_Finse_2016_2017/2016/17-12-01_BiomassAndSeed.xlsx", col_types = c("text", "text", "text", "text", "numeric", "numeric", "text", "date", "text", "date", "text", "date", "text", "date", "text"))
 
 ### SOME PROBLEM WITH 2 PLANTS WHERE THERE ARE 2 PLANTS!!!
 
@@ -205,7 +205,7 @@ biomass16 <- biomass16 %>%
 
 ### 2017
 #importing biomass data
-Biomass17 <- read_excel("Data/2017/Biomass.xlsx", col_types = c("text", "text", "text", "text", "text", "numeric", "numeric", "date", "text", "date", "text", "date", "text", "date", "text"))
+Biomass17 <- read_excel("Data_plant_pollinator_Finse_2016_2017/2017/Biomass.xlsx", col_types = c("text", "text", "text", "text", "text", "numeric", "numeric", "date", "text", "date", "text", "date", "text", "date", "text"))
 
 ### BY SITE ###
 Biomass17 <- Biomass17 %>% 
