@@ -1,4 +1,4 @@
-source("RanunculusData.R")
+source("R/Linns paper/1_ImportData.R")
 
 library("MuMIn")
 library("lme4")
@@ -24,23 +24,20 @@ options(na.action = "na.fail") # can also be put in the model
 
 # 2016 data
 # Seed potential
-dat2016 <- WeatherAndBiomass %>% filter(Year == 2016,
-                          MeanVisit != Inf) %>% 
+dat2016 <- WeatherAndBiomass %>% filter(Year == 2016) %>% 
   droplevels() %>% 
   mutate(Biomass.cen = scale(Biomass, scale = FALSE))
 
 d1 <- as_tibble(x = scale(dat2016$CumTemp))
-d2 <- as_tibble(x = scale(dat2016$CumPrec))
 d3 <- as_tibble(x = scale(dat2016$MeanFlowers))
-d4 <- as_tibble(x = scale(dat2016$MeanVisit))
 
 dat2016 <- dat2016 %>% 
   #select(-CumTemp.cen) %>% 
-  bind_cols(d1, d2, d3, d4) %>% 
-  rename(CumTemp.cen = V1, CumPrec.cen = V11, MeanFlower.cen = V12, MeanVisit.cen = V13)
+  bind_cols(d1, d3) %>% 
+  rename(CumTemp.cen = V1...30, MeanFlower.cen = V1...31)
 
 # Define full model with all variables
-ModelSeedPotential2016 <- glmer(Seed_potential ~ Biomass + Stage + Treatment + MeanFlower.cen + CumTemp.cen + CumPrec.cen + (1 | BlockID), family = "binomial", data = dat2016) #removed weights = Tot_Ovule because we have a binomial distribution 
+ModelSeedPotential2016 <- glmer(Seed_potential ~ Biomass + Stage + Treatment + MeanFlower.cen + CumTemp.cen + (1 | BlockID), family = "binomial", data = dat2016) #removed weights = Tot_Ovule because we have a binomial distribution 
 
 
 # check model assumptions
@@ -77,8 +74,8 @@ resSP1 <- resSP %>%
   setNames(., c("Variable", "Estimate", "StError", "AdjSE", "Zvalue", "Pvalue")) %>%
   select(-AdjSE) %>%
   mutate(Category = Variable) %>%
-  mutate(Category = plyr::mapvalues(Category, c("Intercept", "CumTemp.cen", "Biomass", "MeanFlower.cen", "CumPrec.cen", "StageM", "StageL", "TreatmentPollinated"), c("Stage: early and Treatment: control", "Cumulative temperature", "Biomass", "Phenology", "Cumulative precipitation", "Stage: mid", "Stage: late", "Treatment: hand pollinated"))) %>%
-  mutate(Variable = plyr::mapvalues(Variable, c("Intercept", "CumTemp.cen", "Biomass", "MeanFlower.cen", "CumPrec.cen", "StageM", "StageL", "TreatmentPollinated"), c("Stage: early and Treatment: control", "Cumulative temperature", "Biomass", "Phenology", "Cumulative precipitation", "Stage: mid", "Stage: late", "Treatment: hand pollinated"))) %>%
+  mutate(Category = plyr::mapvalues(Category, c("Intercept", "CumTemp.cen", "Biomass", "MeanFlower.cen", "StageM", "StageL", "TreatmentPollinated"), c("Stage: early and Treatment: control", "Cumulative temperature", "Biomass", "Phenology", "Stage: mid", "Stage: late", "Treatment: hand pollinated"))) %>%
+  mutate(Variable = plyr::mapvalues(Variable, c("Intercept", "CumTemp.cen", "Biomass", "MeanFlower.cen", "StageM", "StageL", "TreatmentPollinated"), c("Stage: early and Treatment: control", "Cumulative temperature", "Biomass", "Phenology", "Stage: mid", "Stage: late", "Treatment: hand pollinated"))) %>%
   mutate(CI.low = Estimate - 1.96 * StError) %>%
   mutate(CI.high = Estimate + 1.96 * StError) %>%
   mutate(Estimate = round(Estimate, 2), CI.low = round(CI.low, 2), CI.high = round(CI.high, 2), Zvalue = round(Zvalue, 2), Pvalue = round(Pvalue, 3)) %>%
@@ -86,7 +83,7 @@ resSP1 <- resSP %>%
   select(Variable, Estimate, CI.low, CI.high, Zvalue, Pvalue)
 resSP1
 
-#nothing is significant
+#late stage er significant
 
 
 
@@ -172,24 +169,21 @@ ggsave(Seedmass2016, filename = "Figurer/Seedmass2016.jpeg", height = 6, width =
 
 
 # 2017 data
-dat2017 <- WeatherAndBiomass %>% filter(Year == 2017,
-                                        MeanVisit != Inf) %>% 
+dat2017 <- WeatherAndBiomass %>% filter(Year == 2017) %>% 
   droplevels() %>% 
   mutate(MeanVisit.cen = scale(MeanVisit, scale = FALSE),
          Biomass.cen = scale(Biomass, scale = FALSE))
 
 d1 <- as_tibble(x = scale(dat2017$CumTemp))
-d2 <- as_tibble(x = scale(dat2017$CumPrec))
-d3 <- as_tibble(x = scale(dat2017$MeanFlowers))
-d4 <- as_tibble(x = scale(dat2017$MeanFlowers)) #added this, since its added above, correct?
+d3 <- as_tibble(x = scale(dat2017$MeanFlowers)) #added this, since its added above, correct?
 
 dat2017 <- dat2017 %>% 
   #select(-CumTemp.cen) %>% 
-  bind_cols(d1, d2, d3, d4) %>%  #also added d4 here, see comment above
-  rename(CumTemp.cen = V1, CumPrec.cen = V11, MeanFlower.cen = V12)
+  bind_cols(d1, d3) %>%  #also added d4 here, see comment above
+  rename(CumTemp.cen = V1...31, MeanFlower.cen = V1...32)
 
 #Model
-ModelSeedMass2017 <- lmer(log(Seed_mass) ~ Biomass + Stage + Treatment + MeanFlower.cen + CumTemp.cen + CumPrec.cen + (1| BlockID), data = dat2017, REML = FALSE)
+ModelSeedMass2017 <- lmer(log(Seed_mass) ~ Biomass + Stage + Treatment + MeanFlower.cen + CumTemp.cen + (1| BlockID), data = dat2017, REML = FALSE)
 
 #Check the different plots (only get one type of plot here, correct?)
 fix.check(ModelSeedMass2017)
