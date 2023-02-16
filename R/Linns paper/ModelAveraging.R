@@ -1,4 +1,4 @@
-source("R/Linns paper/1_ImportData.R")
+source("R/1_Import_RanunculusData.R")
 
 library("MuMIn")
 library("lme4")
