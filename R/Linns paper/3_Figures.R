@@ -6,8 +6,18 @@ library(ggplot2)
 library(broom.mixed)
 library(lme4)
 
+#Pollen limitation
+WeatherAndBiomass %>% 
+  ggplot(aes(x = Treatment, y = log(Seed_mass), fill = Treatment)) +
+  geom_boxplot() +
+  facet_wrap(Stage ~ Year)
+
+
 #Figure on dredge models (som i artikkel)
 #Plot, har ikke endret navn på intercept da jeg ikke vet om det er stage E eller treatment: control
+
+
+
 
 #eller endre farge til symbol, tom sirkel eller hel
 Seedmass2016 <- ggplot(resSM162, aes(x = Estimate, y = Variable, color = Pvalue<=0.05)) + 
