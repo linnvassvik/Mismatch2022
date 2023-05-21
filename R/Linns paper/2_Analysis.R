@@ -79,8 +79,8 @@ resSM162 <- resSM16 %>%
   setNames(., c("Variable", "Estimate", "StError", "AdjSE", "Zvalue", "Pvalue")) %>%
   select(-AdjSE) %>%
   mutate(Category = Variable) %>%
-  mutate(Category = plyr::mapvalues(Category, c("Intercept", "Biomass", "StageM", "StageL", "CumTemp.cen", "TreatmentPollinated", "MeanFlower.cen", "CumPrec.cen"), c("Stage E", "Biomass", "Stage: mid", "Stage: late", "Cumulative temperature", "Treatment: hand pollinated", "Phenology", "Cumulative precipitation"))) %>%
-  mutate(Variable = plyr::mapvalues(Variable, c("Intercept", "Biomass", "StageM", "StageL", "CumTemp.cen", "TreatmentPollinated", "MeanFlower.cen", "CumPrec.cen"), c("Stage E", "Biomass", "Stage: mid", "Stage: late", "Cumulative temperature", "Treatment: hand pollinated", "Phenology", "Cumulative precipitation"))) %>%
+  mutate(Category = plyr::mapvalues(Category, c("Intercept", "Biomass", "StageM", "StageL", "CumTemp.cen", "TreatmentPollinated", "MeanFlower.cen", "CumPrec.cen"), c("Stage: mid", "Biomass", "Stage: late", "Stage: very late", "Cumulative temperature", "Treatment: hand pollinated", "Phenology", "Cumulative precipitation"))) %>%
+  mutate(Variable = plyr::mapvalues(Variable, c("Intercept", "Biomass", "StageM", "StageL", "CumTemp.cen", "TreatmentPollinated", "MeanFlower.cen", "CumPrec.cen"), c("Stage: mid", "Biomass", "Stage: late", "Stage: very late", "Cumulative temperature", "Treatment: hand pollinated", "Phenology", "Cumulative precipitation"))) %>%
   mutate(CI.low = Estimate - 1.96 * StError) %>%
   mutate(CI.high = Estimate + 1.96 * StError) %>%
   mutate(Estimate = round(Estimate, 2), CI.low = round(CI.low, 2), CI.high = round(CI.high, 2), Zvalue = round(Zvalue, 2), Pvalue = round(Pvalue, 3)) %>%
