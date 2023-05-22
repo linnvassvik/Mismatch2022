@@ -3,6 +3,7 @@ library("dplyr")
 library("tidyr")
 library("lubridate")
 library("lme4")
+library("ggplot2")
 
 #Load temperature dataset from both eklima and ibutton
 #iButton
@@ -57,6 +58,7 @@ Temperature_Finse <- Temperature_Finse %>%
 Temperature_Finse <- Temperature_Finse %>% 
   mutate(doy = yday(Date))
 
+Temperature_Finse$Stage <- substr(Temperature_Finse$ID, 1, 1)
 
 #compare average temp per day per site from ibutton to eklima
 TemperatureFinsePlot <- ggplot(Temperature_Finse, aes(x = doy)) +
