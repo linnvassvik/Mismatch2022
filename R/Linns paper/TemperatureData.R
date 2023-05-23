@@ -1,9 +1,10 @@
 library("readxl")
-library("dplyr")
 library("tidyr")
+library("dplyr")
 library("lubridate")
-library("lme4")
 library("ggplot2")
+
+####Compare temperature data from climate station and ibutton in 2016
 
 #Load temperature dataset from both eklima and ibutton
 #iButton
@@ -66,6 +67,94 @@ TemperatureFinsePlot <- ggplot(Temperature_Finse, aes(x = doy)) +
   geom_smooth(aes(y = Adiabatic_Temperature, color = "Temperature Climate Station")) +
   labs(x = "Day of the year", y="Average daily temperature (°C)", color = "") +
   scale_color_manual(values = c("Temperature iButton" = "#FF6666", "Temperature Climate Station" = "#99CCCC")) +
-  theme(legend.position="bottom", panel.background = element_blank(), text = element_text(size = 8))
+  theme(legend.position="bottom", panel.background = element_blank(), text = element_text(size = 8)) #+
+  facet_grid(~Stage)
 ggsave(TemperatureFinsePlot, filename = "Figures/TemperatureFinsePlot.jpeg", height = 6, width = 8)
+
+
+
+
+
+########Compare temperature data in 2016 and 2017 from climate station correlated for the adiabatic lapse rate
+
+###Stage and meter above sea level (MASL) file
+Site_MASL <- read_excel("Data_plant_pollinator_Finse_2016_2017/Stage_MASL.xlsx")
+
+Site_MASL <- Site_MASL %>% 
+  select(-siteID)
+
+Site_MASL$MASLCorr <- Site_MASL$MASL - 1222
+
+#Import data 2017
+Temperature_2017 <- read_excel("Data_plant_pollinator_Finse_2016_2017/2017/Finse_weather.xlsx")
+
+Temperature_2017$Date <- as.Date(Temperature_2017$date)
+
+Temperature_2017 <- Temperature_2017 %>%
+  rename(Temp_2017 = temperature) %>% 
+  filter(Date >= as.Date("2017-06-06")) %>% 
+  mutate(doy = yday(Date)) 
+
+#Load stages and dates file
+Stages2017 <- read_excel("Data_plant_pollinator_Finse_2016_2017/Dates_Stages_2017.xlsx") 
+
+#create dataframe for the three stages
+Temperature_2017_Site <- left_join(Temperature_2017, Stages2017, by = "Date")
+
+
+Temperature_2017_Site %>% 
+  filter(Date >= as.Date("2017-06-06")) %>% 
+  mutate(doy = yday(Date))
+
+Temp_2017_ALR <-Temperature_2017_Site %>% 
+  select(-date, -Date, -precipitation)
+
+#Add heightdata for each site
+Temp_MASL_2017 <- merge(Temp_2017_ALR, Site_MASL, by = "Stage")
+
+#add adiabatic time lapse to data and corrigate temperature according to m asl.
+Temp_MASL_2017$Temp_2017_ALR <- Temp_MASL_2017$Temp_2017 - (lapse_rate * (Temp_MASL_2017$MASLCorr / 1000))
+
+
+##Temperature 2016
+Temperature_2016 <- eKlima %>% 
+  rename(Temp_2016 = Temp_station) %>% 
+  filter(Date >= as.Date("2016-06-17")) %>% 
+  mutate(doy = yday(Date)) 
+
+#Load stages and dates file
+Stages2016 <- read_excel("Data_plant_pollinator_Finse_2016_2017/Dates_Stages_2016.xlsx") 
+
+#create dataframe for the three stages
+Temperature_2016_Site <- left_join(Temperature_2016, Stages2016, by = "Date")
+
+
+Temperature_2016_Site %>% 
+  filter(Date >= as.Date("2017-06-06")) %>% 
+  mutate(doy = yday(Date))
+
+Temp_2016_ALR <- Temperature_2016_Site %>% 
+  select(-Date)
+
+#Add heightdata for each site
+Temp_MASL_2016 <- merge(Temp_2016_ALR, Site_MASL, by = "Stage")
+
+#add adiabatic time lapse to data and corrigate temperature according to m asl.
+Temp_MASL_2016$Temp_2016_ALR <- Temp_MASL_2016$Temp_2016 - (lapse_rate * (Temp_MASL_2016$MASLCorr / 1000))
+
+#Merge Temperature files
+Temperature_all <- merge(Temp_2016_ALR, Temp_2017_ALR, by = c("doy", "Stage"), all = TRUE)
+
+
+#compare average temp per day per site from climate station data in 2016 and 2017
+TemperatureFinseComb <- ggplot(Temperature_all, aes(x = doy)) +
+  geom_smooth(aes(y = Temp_2016, color = "Temperature 2016")) +
+  geom_smooth(aes(y = Temp_2017, color = "Temperature 2017")) +
+  labs(x = "Day of the year", y="Average daily temperature (°C)", color = "") +
+  scale_color_manual(values = c("Temperature 2016" = "#FF6666", "Temperature 2017" = "#99CCCC")) +
+  theme(legend.position="bottom", panel.background = element_blank(), text = element_text(size = 8)) #+
+facet_grid(~Stage)
+ggsave(TemperatureFinseComb, filename = "Figures/TemperatureFinseComb.jpeg", height = 6, width = 8)
+#### Must be wrong?
+
 
