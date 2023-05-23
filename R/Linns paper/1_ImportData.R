@@ -36,6 +36,28 @@ pheno16 <- pheno16 %>%
   rename(weather = Vaer, name = Hvem)
 
 
+
+####### sidenote ########
+peak16 <- ggplot(pheno16, aes(x = day, y = flowering, color = stage)) +
+  geom_smooth()
+#Get peak and first flowering for all stages  
+smooth_data <- ggplot_build(peak16)$data[[1]]
+
+peak_values16 <- smooth_data %>%
+  group_by(group) %>%
+  filter(y == max(y)) %>%
+  select(group, x, y) %>%
+  ungroup()
+
+print(peak_values16)
+
+first_flowering <- pheno16 %>%
+  filter(flowering == 1) %>%
+  group_by(stage) %>%
+  summarise(first_flowering_doy = min(day))
+
+print(first_flowering)
+
 # POLLINATOR OBSERVATIONS
 pollination16 <- read_csv2("Data_plant_pollinator_Finse_2016_2017/2016/RanunculusPollinator.csv", col_names = TRUE, col_types = NULL)
 
@@ -87,6 +109,27 @@ pheno17 <- pheno17 %>%
   select(-Date, -Time) %>% 
   rename(weather = Weather, name = Name)
 
+
+####### sidenote ########
+peak17 <- ggplot(pheno17, aes(x = day, y = flowering, color = stage)) +
+  geom_smooth()
+#Get peak and first flowering for all stages  
+smooth_data <- ggplot_build(peak17)$data[[1]]
+
+peak_values17 <- smooth_data %>%
+  group_by(group) %>%
+  filter(y == max(y)) %>%
+  select(group, x, y) %>%
+  ungroup()
+
+print(peak_values17)
+
+first_flowering17 <- pheno17 %>%
+  filter(flowering == 1) %>%
+  group_by(stage) %>%
+  summarise(first_flowering_doy = min(day))
+
+print(first_flowering17)
 
 # POLLINATOR OBSERVATIONS
 pollination17 <- read_csv2("Data_plant_pollinator_Finse_2016_2017/2017/17-10-31_Pollinatorobservations.csv", col_names = TRUE, col_types = NULL)
