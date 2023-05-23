@@ -146,8 +146,17 @@ Temp_MASL_2016$Temp_2016_ALR <- Temp_MASL_2016$Temp_2016 - (lapse_rate * (Temp_M
 Temperature_all <- merge(Temp_MASL_2016, Temp_MASL_2017, by = c("doy", "Stage"), all = TRUE)
 
 
+#### DOESNT WORK!!
+##Colored bands at the bottom of ggplot, from first to peak phenology recordings
+bands <- data.frame(
+  start_doy = c(162, 175, 184, 169, 186, 197),
+  end_doy = c(197, 206, 207, 197, 205, 209),
+  color = c("blue", "green", "yellow", "pink", "red", "purple")
+)
+
 #compare average temp per day per site from climate station data in 2016 and 2017
 TemperatureFinseComb <- ggplot(Temperature_all, aes(x = doy)) +
+  geom_ribbon(data = bands, aes(x = start_doy, xmax = end_doy, ymin = -Inf, ymax = Inf, fill = color), alpha = 0.3) +
   geom_smooth(aes(y = Temp_2016, color = "Temperature 2016")) +
   geom_smooth(aes(y = Temp_2017, color = "Temperature 2017")) +
   labs(x = "Day of the year", y="Average daily temperature (°C)", color = "") +
@@ -155,6 +164,5 @@ TemperatureFinseComb <- ggplot(Temperature_all, aes(x = doy)) +
   theme(legend.position="bottom", panel.background = element_blank(), text = element_text(size = 8)) +
 facet_grid(~Stage)
 ggsave(TemperatureFinseComb, filename = "Figures/TemperatureFinseComb.jpeg", height = 6, width = 8)
-
 
 
