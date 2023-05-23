@@ -143,7 +143,7 @@ Temp_MASL_2016 <- merge(Temp_2016_ALR, Site_MASL, by = "Stage")
 Temp_MASL_2016$Temp_2016_ALR <- Temp_MASL_2016$Temp_2016 - (lapse_rate * (Temp_MASL_2016$MASLCorr / 1000))
 
 #Merge Temperature files
-Temperature_all <- merge(Temp_2016_ALR, Temp_2017_ALR, by = c("doy", "Stage"), all = TRUE)
+Temperature_all <- merge(Temp_MASL_2016, Temp_MASL_2017, by = c("doy", "Stage"), all = TRUE)
 
 
 #compare average temp per day per site from climate station data in 2016 and 2017
@@ -152,9 +152,9 @@ TemperatureFinseComb <- ggplot(Temperature_all, aes(x = doy)) +
   geom_smooth(aes(y = Temp_2017, color = "Temperature 2017")) +
   labs(x = "Day of the year", y="Average daily temperature (°C)", color = "") +
   scale_color_manual(values = c("Temperature 2016" = "#FF6666", "Temperature 2017" = "#99CCCC")) +
-  theme(legend.position="bottom", panel.background = element_blank(), text = element_text(size = 8)) #+
+  theme(legend.position="bottom", panel.background = element_blank(), text = element_text(size = 8)) +
 facet_grid(~Stage)
 ggsave(TemperatureFinseComb, filename = "Figures/TemperatureFinseComb.jpeg", height = 6, width = 8)
-#### Must be wrong?
+
 
 
