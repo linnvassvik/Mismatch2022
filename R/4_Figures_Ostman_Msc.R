@@ -175,6 +175,7 @@ sumP17 <- sumTP %>%
 
 # Figure Ia 
 tf16 <- Weather %>% 
+  mutate(year = lubridate::year(date)) %>%
   filter(year == 2016) %>% 
   ggplot(aes(x = doy, y = temperature)) +
   geom_rect(aes(xmin=169, xmax=203, ymin=0, ymax=1, fill = "mid"), colour = NA, alpha = 0.01) +
@@ -188,6 +189,7 @@ tf16 <- Weather %>%
 
 # Figure Ib
 tf17 <- Weather %>% 
+  mutate(year = lubridate::year(date)) %>%
   filter(year == 2017) %>% 
   ggplot(aes(x = doy, y = temperature)) +
   geom_rect(aes(xmin=162, xmax=203, ymin=0, ymax=1, fill = "early"), alpha=0.01) +
@@ -202,6 +204,7 @@ tf17 <- Weather %>%
   theme(legend.position = "none")
 
 tf17Leg <- Weather %>% 
+  mutate(year = lubridate::year(date)) %>%
   filter(year == 2017) %>% 
   ggplot(aes(x = doy, y = temperature)) +
   geom_rect(aes(xmin=162, xmax=203, ymin=0, ymax=1, fill = "early"), alpha=0.01) +
