@@ -20,7 +20,7 @@ iButtonFinse <- aggregate(iButtonFinse$Temperature, by = list(iButtonFinse$Date,
 colnames(iButtonFinse) <- c("Date", "ID", "average_temperature")
 
 #eklima
-eKlima <- read_excel("Data_plant_pollinator_Finse_2016_2017/2016/Finse_weather_2016.xlsx")
+eKlima <- read_excel("Data_plant_pollinator_Finse_2016_2017/2016/Finse_weather_2016_ny.xlsx")
 
 eKlima <- eKlima %>% 
   select(-Nedbor) 
@@ -148,21 +148,25 @@ Temperature_all <- merge(Temp_MASL_2016, Temp_MASL_2017, by = c("doy", "Stage"),
 
 #### DOESNT WORK!!
 ##Colored bands at the bottom of ggplot, from first to peak phenology recordings
-bands <- data.frame(
-  start_doy = c(162, 175, 184, 169, 186, 197),
-  end_doy = c(197, 206, 207, 197, 205, 209),
-  color = c("blue", "green", "yellow", "pink", "red", "purple")
-)
+#bands <- data.frame(
+  #start_doy = c(162, 175, 184, 169, 186, 197),
+  #end_doy = c(197, 206, 207, 197, 205, 209))
 
-#compare average temp per day per site from climate station data in 2016 and 2017
+#compare average temp per day per site from climate station data in 2016 and 2017, with snowmeltstages marked out with colored bands. Taken earliest flowering and latest peak from 2017 and 2016 to mark start and stop.
 TemperatureFinseComb <- ggplot(Temperature_all, aes(x = doy)) +
   geom_ribbon(data = bands, aes(x = start_doy, xmax = end_doy, ymin = -Inf, ymax = Inf, fill = color), alpha = 0.3) +
   geom_smooth(aes(y = Temp_2016, color = "Temperature 2016")) +
   geom_smooth(aes(y = Temp_2017, color = "Temperature 2017")) +
+  geom_rect(aes(xmin=162, xmax=197, ymin=0, ymax=1, fill = "early"), alpha=0.01) +
+  geom_rect(aes(xmin=175, xmax=206, ymin=1, ymax=2, fill = "mid"), alpha = 0.01) +
+  geom_rect(aes(xmin=184, xmax=207, ymin=2, ymax=3, fill = "late"), alpha = 0.01) +
+  geom_rect(aes(xmin=197, xmax=209, ymin=3, ymax=4, fill = "very late"), alpha = 0.01) +
   labs(x = "Day of the year", y="Average daily temperature (°C)", color = "") +
-  scale_color_manual(values = c("Temperature 2016" = "#FF6666", "Temperature 2017" = "#99CCCC")) +
+  scale_color_manual(values = c("Temperature 2016" = "#FF6666", "Temperature 2017" = "#CC0033")) +
+  scale_fill_manual("Stage", values = c(early = "#FFFF99", mid = "#FFCC33", late = "#FF9966", `very late` = "#FF6600"),
+                    labels = c("Early", "Mid", "Late", "Very Late")) +
   theme(legend.position="bottom", panel.background = element_blank(), text = element_text(size = 8)) +
-facet_grid(~Stage)
+  xlim(150, 250)
 ggsave(TemperatureFinseComb, filename = "Figures/TemperatureFinseComb.jpeg", height = 6, width = 8)
 
 
