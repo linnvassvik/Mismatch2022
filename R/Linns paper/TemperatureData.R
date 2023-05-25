@@ -3,6 +3,8 @@ library("tidyr")
 library("dplyr")
 library("lubridate")
 library("ggplot2")
+library("cowplot")
+library("ggpubr")
 
 ####Compare temperature data from climate station and ibutton in 2016
 
@@ -146,27 +148,36 @@ Temp_MASL_2016$Temp_2016_ALR <- Temp_MASL_2016$Temp_2016 - (lapse_rate * (Temp_M
 Temperature_all <- merge(Temp_MASL_2016, Temp_MASL_2017, by = c("doy", "Stage"), all = TRUE)
 
 
-#### DOESNT WORK!!
-##Colored bands at the bottom of ggplot, from first to peak phenology recordings
-#bands <- data.frame(
-  #start_doy = c(162, 175, 184, 169, 186, 197),
-  #end_doy = c(197, 206, 207, 197, 205, 209))
-
 #compare average temp per day per site from climate station data in 2016 and 2017, with snowmeltstages marked out with colored bands. Taken earliest flowering and latest peak from 2017 and 2016 to mark start and stop.
-TemperatureFinseComb <- ggplot(Temperature_all, aes(x = doy)) +
-  geom_ribbon(data = bands, aes(x = start_doy, xmax = end_doy, ymin = -Inf, ymax = Inf, fill = color), alpha = 0.3) +
-  geom_smooth(aes(y = Temp_2016, color = "Temperature 2016")) +
-  geom_smooth(aes(y = Temp_2017, color = "Temperature 2017")) +
-  geom_rect(aes(xmin=162, xmax=197, ymin=0, ymax=1, fill = "early"), alpha=0.01) +
-  geom_rect(aes(xmin=175, xmax=206, ymin=1, ymax=2, fill = "mid"), alpha = 0.01) +
-  geom_rect(aes(xmin=184, xmax=207, ymin=2, ymax=3, fill = "late"), alpha = 0.01) +
-  geom_rect(aes(xmin=197, xmax=209, ymin=3, ymax=4, fill = "very late"), alpha = 0.01) +
+#2016
+TemperatureFinseComb16 <- ggplot(Temperature_all, aes(x = doy)) +
+  geom_smooth(aes(y = Temp_2016, color = "Temperature 2016"), se = FALSE) +
+  geom_rect(aes(xmin=169, xmax=197, ymin=0, ymax=1, fill = "mid"), alpha = 0.5) +
+  geom_rect(aes(xmin=186, xmax=205, ymin=1, ymax=2, fill = "late"), alpha = 0.5) +
+  geom_rect(aes(xmin=197, xmax=209, ymin=2, ymax=3, fill = "very late"), alpha = 0.5) +
   labs(x = "Day of the year", y="Average daily temperature (°C)", color = "") +
-  scale_color_manual(values = c("Temperature 2016" = "#FF6666", "Temperature 2017" = "#CC0033")) +
-  scale_fill_manual("Stage", values = c(early = "#FFFF99", mid = "#FFCC33", late = "#FF9966", `very late` = "#FF6600"),
-                    labels = c("Early", "Mid", "Late", "Very Late")) +
-  theme(legend.position="bottom", panel.background = element_blank(), text = element_text(size = 8)) +
-  xlim(150, 250)
-ggsave(TemperatureFinseComb, filename = "Figures/TemperatureFinseComb.jpeg", height = 6, width = 8)
+  scale_color_manual(values = c("#FF6666"), guide = "none") +
+  scale_fill_manual("Stage", values = c(mid = "#FFCC33", late = "#FF9966", `very late` = "#FF6600"),
+                    labels = c("Mid", "Late", "Very Late")) +
+  ggtitle("a) 2016") +
+  theme(legend.position="bottom", panel.background = element_blank(), text = element_text(size = 8))
+ggsave(TemperatureFinseComb16, filename = "Figures/TemperatureFinseComb16.jpeg", height = 6, width = 8)
 
+#2017
+TemperatureFinseComb17 <- ggplot(Temperature_all, aes(x = doy)) +
+  geom_smooth(aes(y = Temp_2017, color = "Temperature 2017"), se = FALSE) +
+  geom_rect(aes(xmin=162, xmax=197, ymin=0, ymax=1, fill = "early"), alpha=0.5) +
+  geom_rect(aes(xmin=175, xmax=206, ymin=1, ymax=2, fill = "mid"), alpha = 0.5) +
+  geom_rect(aes(xmin=184, xmax=207, ymin=2, ymax=3, fill = "late"), alpha = 0.5) +
+  labs(x = "Day of the year", y="Average daily temperature (°C)", color = "") +
+  scale_color_manual(values = c("#FF6666"), guide = "none") +
+  scale_fill_manual("Stage", values = c(early = "#FFFF99", mid = "#FFCC33", late = "#FF9966"),
+                    labels = c("Early", "Mid", "Late")) +
+  ggtitle("b) 2017") +
+  theme(legend.position="bottom", panel.background = element_blank(), text = element_text(size = 8))
+ggsave(TemperatureFinseComb17, filename = "Figures/TemperatureFinseComb17.jpeg", height = 6, width = 8)
+
+#Combine
+TemperatureSnowmeltStagesCombines <- ggarrange(TemperatureFinseComb16, TemperatureFinseComb17, ncol = 1, heights = c(1, 1, 0.2), top = "Temperature, June-August", legend = "bottom")
+ggsave(TemperatureSnowmeltStagesCombines, filename = "Figures/TemperatureSnowmeltStagesCombines.jpeg", height = 6, width = 8)
 
