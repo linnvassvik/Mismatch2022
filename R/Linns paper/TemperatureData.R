@@ -181,3 +181,14 @@ ggsave(TemperatureFinseComb17, filename = "Figures/TemperatureFinseComb17.jpeg",
 TemperatureSnowmeltStagesCombines <- ggarrange(TemperatureFinseComb16, TemperatureFinseComb17, ncol = 1, heights = c(1, 1, 0.2), top = "Temperature, June-August", legend = "bottom")
 ggsave(TemperatureSnowmeltStagesCombines, filename = "Figures/TemperatureSnowmeltStagesCombines.jpeg", height = 6, width = 8)
 
+
+
+
+TemperatureFinse_comb <- ggplot(Temperature_all, aes(x = doy)) +
+  geom_smooth(aes(y = Temp_2016_ALR, color = "2016")) +
+  geom_smooth(aes(y = Temp_2017_ALR, color = "2017")) +
+  labs(x = "Day of the year", y="Average daily temperature (°C)", color = "") +
+  scale_color_manual(values = c("2016" = "#FF6666", "2017" = "#99CCCC")) +
+  theme(legend.position="bottom", panel.background = element_blank(), text = element_text(size = 8)) #+
+facet_grid(~Stage)
+ggsave(TemperatureFinse_comb, filename = "Figures/TemperatureFinse_comb.jpeg", height = 6, width = 8)

@@ -54,7 +54,7 @@ ggsave(SeedmassCombined, filename = "Figures/SeedmassCombined.jpeg", height = 6,
 
 ######## seed mass
 SeedMassStages <- ggplot(WeatherAndBiomass, aes(x = Stage, y = Seed_mass, fill = Stage)) +
-  geom_boxplot() +
+  geom_violin(draw_quantiles = c(0.5)) +
   scale_x_discrete(labels=c('Stage: early', 'Stage: mid', 'Stage: late', 'Stage: very late')) +
   labs(y = "Seed mass (g)", x = "Snowmelt stages", fill = "") +
   theme_bw() +
