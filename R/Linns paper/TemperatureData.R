@@ -160,6 +160,7 @@ TemperatureFinseComb16 <- ggplot(Temperature_all, aes(x = doy)) +
   scale_fill_manual("Stage", values = c(mid = "#FFCC33", late = "#FF9966", `very late` = "#FF6600"),
                     labels = c("Mid", "Late", "Very Late")) +
   ggtitle("a) 2016") +
+  ylim(0,10) +
   theme(legend.position="bottom", panel.background = element_blank(), text = element_text(size = 8))
 ggsave(TemperatureFinseComb16, filename = "Figures/TemperatureFinseComb16.jpeg", height = 6, width = 8)
 
@@ -174,21 +175,86 @@ TemperatureFinseComb17 <- ggplot(Temperature_all, aes(x = doy)) +
   scale_fill_manual("Stage", values = c(early = "#FFFF99", mid = "#FFCC33", late = "#FF9966"),
                     labels = c("Early", "Mid", "Late")) +
   ggtitle("b) 2017") +
+  ylim(0,10) +
   theme(legend.position="bottom", panel.background = element_blank(), text = element_text(size = 8))
 ggsave(TemperatureFinseComb17, filename = "Figures/TemperatureFinseComb17.jpeg", height = 6, width = 8)
 
 #Combine
-TemperatureSnowmeltStagesCombines <- ggarrange(TemperatureFinseComb16, TemperatureFinseComb17, ncol = 1, heights = c(1, 1, 0.2), top = "Temperature, June-August", legend = "bottom")
+TemperatureSnowmeltStagesCombines <- ggarrange(TemperatureFinseComb16 + ylim(0, 10), TemperatureFinseComb17 + ylim(0, 10), ncol = 1, heights = c(1, 1, 0.2), top = "Temperature, June-August", legend = "bottom")
 ggsave(TemperatureSnowmeltStagesCombines, filename = "Figures/TemperatureSnowmeltStagesCombines.jpeg", height = 6, width = 8)
 
 
+###NEW PLOT
+
+snowmelt_stages <- data.frame(stage = c("1", "2", "3", "4", "5", "6"),
+                              start_doy = c(80, 120, 145, 160),
+                              stop_doy = c(125, 140, 190, 200), 
+                              color = c("yellow", "red", "lightgoldenrod1", "blue"))
 
 
-TemperatureFinse_comb <- ggplot(Temperature_all, aes(x = doy)) +
-  geom_smooth(aes(y = Temp_2016_ALR, color = "2016")) +
-  geom_smooth(aes(y = Temp_2017_ALR, color = "2017")) +
-  labs(x = "Day of the year", y="Average daily temperature (°C)", color = "") +
+marked_doy <- data.frame(doy = c(169, 186, 197, 145, 163, 170),
+                         color = c("#FF6666", "#FF6666", "#FF6666", "#99CCCC", "#99CCCC", "#99CCCC"))
+
+marked_peakflower <- data.frame(doy = c(25, 60, 150, 50, 70, 155),
+                                shape = c("Diamond", "Diamond", "Diamond", "Diamond", "Diamond", "Diamond"))
+
+
+
+TemperatureFinse_comb <- ggplot() +
+  geom_smooth(data = Temperature_all, aes(x = doy, y = Temp_2016_ALR, color = "2016")) +
+  geom_smooth(data = Temperature_all, aes(x = doy, y = Temp_2017_ALR, color = "2017")) +
+  labs(x = "Day of the year", y = "Average daily temperature (°C)", color = "") +
   scale_color_manual(values = c("2016" = "#FF6666", "2017" = "#99CCCC")) +
-  theme(legend.position="bottom", panel.background = element_blank(), text = element_text(size = 8)) #+
+  theme(legend.position = "bottom", panel.background = element_blank(), text = element_text(size = 8)) +
+  geom_rect(data = snowmelt_stages, aes(xmin = start_doy, xmax = stop_doy, ymin = -Inf, ymax = Inf, fill = color),
+            alpha = 0.5) +
+  geom_point(data = marked_doy, aes(x = doy, y = 0, shape = shape),
+             color = "orange", size = 3) +
+  scale_fill_identity() +
+  scale_shape_manual(values = c(Circle = 16, Star = 8)) +
+  
+  #+
 facet_grid(~Stage)
 ggsave(TemperatureFinse_comb, filename = "Figures/TemperatureFinse_comb.jpeg", height = 6, width = 8)
+
+
+
+# Example temperature data
+year1 <- data.frame(doy = 1:365, temp = runif(365, 0, 30))
+year2 <- data.frame(doy = 1:365, temp = runif(365, 0, 30))
+
+# Specify snowmelt stages (start and stop doy)
+
+
+
+# Specify the doy values to mark
+marked_doy <- data.frame(doy = c(25, 60, 150, 50, 70, 155),
+                         shape = c("Circle", "Circle", "Circle", "Star", "Star", "Star"))
+
+# Create the plot
+plot <- ggplot() +
+  geom_line(data = year1, aes(x = doy, y = temp, color = "Year 1"), linewidth = 1) +
+  geom_line(data = year2, aes(x = doy, y = temp, color = "Year 2"), linewidth = 1) +
+  geom_rect(data = snowmelt_stages, aes(xmin = start_doy, xmax = stop_doy, ymin = -Inf, ymax = Inf, fill = color),
+            alpha = 0.5) +
+  geom_point(data = marked_doy, aes(x = doy, y = 0, shape = shape),
+             color = "orange", size = 3) +
+  scale_x_continuous(name = "Day of Year (doy)") +
+  scale_y_continuous(name = "Temperature") +
+  scale_color_manual(name = "Year", values = c("Year 1" = "#FF6666", "Year 2" = "#99CCCC")) +
+  scale_fill_identity() +
+  scale_shape_manual(values = c(Circle = 16, Star = 8)) +
+  theme_minimal()
+
+# Display the plot
+print(plot)
+
+
+
+
+
+
+
+
+
+
