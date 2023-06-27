@@ -195,7 +195,7 @@ snowmelt_stages <- data.frame(stage = c("1", "2", "3", "4", "5", "6"),
 marked_doy <- data.frame(doy = c(169, 186, 197, 145, 163, 170),
                          color = c("#FF6666", "#FF6666", "#FF6666", "#99CCCC", "#99CCCC", "#99CCCC"))
 
-marked_peakflower <- data.frame(doy = c(25, 60, 150, 50, 70, 155),
+marked_peakflower <- data.frame(doy = c(197, 205, 209, 197, 206, 207),
                                 shape = c("Diamond", "Diamond", "Diamond", "Diamond", "Diamond", "Diamond"))
 
 
