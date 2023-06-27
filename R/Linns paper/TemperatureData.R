@@ -187,9 +187,9 @@ ggsave(TemperatureSnowmeltStagesCombines, filename = "Figures/TemperatureSnowmel
 ###NEW PLOT
 
 snowmelt_stages <- data.frame(stage = c("1", "2", "3", "4", "5", "6"),
-                              start_doy = c(80, 120, 145, 160),
-                              stop_doy = c(125, 140, 190, 200), 
-                              color = c("yellow", "red", "lightgoldenrod1", "blue"))
+                              start_doy = c(183, 196, 228, 195, 201, 204),
+                              stop_doy = c(223, 228, 247, 219, 228, 232), 
+                              color = c("#FFFF99", "#FFCC33", "#FFCC99", "#FF9966", "#FF6600", "#CC3300"))
 
 
 marked_doy <- data.frame(doy = c(169, 186, 197, 145, 163, 170),
@@ -198,16 +198,19 @@ marked_doy <- data.frame(doy = c(169, 186, 197, 145, 163, 170),
 marked_peakflower <- data.frame(doy = c(197, 205, 209, 197, 206, 207),
                                 shape = c("Diamond", "Diamond", "Diamond", "Diamond", "Diamond", "Diamond"))
 
+#Change to geom_rect above, one line per snowmelt stage
 
-
-TemperatureFinse_comb <- ggplot() +
+TemperatureFinse_comb <- 
+  ggplot() +
   geom_smooth(data = Temperature_all, aes(x = doy, y = Temp_2016_ALR, color = "2016")) +
   geom_smooth(data = Temperature_all, aes(x = doy, y = Temp_2017_ALR, color = "2017")) +
   labs(x = "Day of the year", y = "Average daily temperature (°C)", color = "") +
   scale_color_manual(values = c("2016" = "#FF6666", "2017" = "#99CCCC")) +
   theme(legend.position = "bottom", panel.background = element_blank(), text = element_text(size = 8)) +
-  geom_rect(data = snowmelt_stages, aes(xmin = start_doy, xmax = stop_doy, ymin = -Inf, ymax = Inf, fill = color),
+  geom_rect(data = snowmelt_stages, aes(xmin = start_doy, xmax = stop_doy, ymin = -1, ymax = 0, fill = stage),
             alpha = 0.5) +
+  scale_fill_manual(values = snowmelt_stages$color) 
+#COLORS NOT CORRECT +
   geom_point(data = marked_doy, aes(x = doy, y = 0, shape = shape),
              color = "orange", size = 3) +
   scale_fill_identity() +
@@ -216,6 +219,8 @@ TemperatureFinse_comb <- ggplot() +
   #+
 facet_grid(~Stage)
 ggsave(TemperatureFinse_comb, filename = "Figures/TemperatureFinse_comb.jpeg", height = 6, width = 8)
+
+
 
 
 
@@ -248,8 +253,6 @@ plot <- ggplot() +
 
 # Display the plot
 print(plot)
-
-
 
 
 
