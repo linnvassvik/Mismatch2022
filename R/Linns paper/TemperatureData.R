@@ -186,75 +186,55 @@ ggsave(TemperatureSnowmeltStagesCombines, filename = "Figures/TemperatureSnowmel
 
 ###NEW PLOT
 
-snowmelt_stages <- data.frame(stage = c("1", "2", "3", "4", "5", "6"),
-                              start_doy = c(183, 196, 228, 195, 201, 204),
-                              stop_doy = c(223, 228, 247, 219, 228, 232), 
-                              color = c("#FFFF99", "#FFCC33", "#FFCC99", "#FF9966", "#FF6600", "#CC3300"))
 
+marked_doy <- data.frame(doy = c(145, 169, 163, 186, 170, 197),
+                         color = c("#FFFF99", "#FFCC33", "#FFCC99", "#FF9966", "#FF6600", "#CC3300"),
+                         shape = c("Diamond", "Circle", "Diamond", "Circle", "Diamond", "Circle"))
 
-marked_doy <- data.frame(doy = c(169, 186, 197, 145, 163, 170),
-                         color = c("#FF6666", "#FF6666", "#FF6666", "#99CCCC", "#99CCCC", "#99CCCC"))
-
-marked_peakflower <- data.frame(doy = c(197, 205, 209, 197, 206, 207),
-                                shape = c("Diamond", "Diamond", "Diamond", "Diamond", "Diamond", "Diamond"))
 
 #Change to geom_rect above, one line per snowmelt stage
 
-TemperatureFinse_comb <- 
-  ggplot() +
-  geom_smooth(data = Temperature_all, aes(x = doy, y = Temp_2016_ALR, color = "2016")) +
-  geom_smooth(data = Temperature_all, aes(x = doy, y = Temp_2017_ALR, color = "2017")) +
+TemperatureFinse_comb <- ggplot() +
+  geom_smooth(data = Temperature_all, aes(x = doy, y = Temp_2016_ALR, color = "2016"), alpha = 0) +
+  geom_smooth(data = Temperature_all, aes(x = doy, y = Temp_2017_ALR, color = "2017"), alpha = 0) +
   labs(x = "Day of the year", y = "Average daily temperature (°C)", color = "") +
-  scale_color_manual(values = c("2016" = "#FF6666", "2017" = "#99CCCC")) +
-  theme(legend.position = "bottom", panel.background = element_blank(), text = element_text(size = 8)) +
-  geom_rect(data = snowmelt_stages, aes(xmin = start_doy, xmax = stop_doy, ymin = -1, ymax = 0, fill = stage),
-            alpha = 0.5) +
-  scale_fill_manual(values = snowmelt_stages$color) 
-#COLORS NOT CORRECT +
-  geom_point(data = marked_doy, aes(x = doy, y = 0, shape = shape),
-             color = "orange", size = 3) +
-  scale_fill_identity() +
-  scale_shape_manual(values = c(Circle = 16, Star = 8)) +
-  
-  #+
-facet_grid(~Stage)
+  scale_color_manual(values = c("2016" = "#FF6666", "2017" = "#990000")) +
+  theme(legend.position = c(0.02, 0.9), legend.justification = c(0, 1),
+        panel.background = element_blank(), text = element_text(size = 14),
+        plot.title = element_text(hjust = 0, vjust = 1, margin = margin(t = 10, r = 0, b = 0, l = 0))) +
+  geom_rect(aes(xmin=195, xmax=219, ymin=0, ymax=0.2, fill = "1"), alpha=0.5) + 
+  geom_rect(aes(xmin=191, xmax=223, ymin=0.2, ymax=0.4, fill = "2a"), alpha=0.5) + #but two flowers were hand pollinated already 2nd of july, doy= 183
+  geom_rect(aes(xmin=201, xmax=228, ymin=0.4, ymax=0.6, fill = "2b"), alpha = 0.5) +
+  geom_rect(aes(xmin=196, xmax=228, ymin=0.6, ymax=0.8, fill = "3a"), alpha = 0.5) +
+  geom_rect(aes(xmin=204, xmax=232, ymin=0.8, ymax=1, fill = "3b"), alpha = 0.5) +
+  geom_rect(aes(xmin=228, xmax=247, ymin=1, ymax=1.2, fill = "4"), alpha = 0.5) +
+  geom_text(aes(x = 207, y = 0.1, label = "1: 2017"), color = "brown", size = 3) +
+  geom_text(aes(x = 203, y = 0.3, label = "2: 2016"), color = "brown", size = 3) +
+  geom_text(aes(x = 214.5, y = 0.5, label = "2: 2017"), color = "brown", size = 3) +
+  geom_text(aes(x = 214, y = 0.7, label = "3: 2016"), color = "brown", size = 3) +
+  geom_text(aes(x = 218, y = 0.9, label = "3: 2017"), color = "brown", size = 3) +
+  geom_text(aes(x = 237.5, y = 1.1, label = "4: 2016"), color = "brown", size = 3) +
+  geom_point(aes(x = 145, y = 0.1, label = "none"), color = "brown", fill = "#FFFF00", shape = 21, size = 2, stroke = 0.2) +
+  geom_point(aes(x = 169, y = 0.3, label = "none"), color = "brown", fill = "#FFCC33", shape = 24, size = 2, stroke = 0.2) +
+  geom_point(aes(x = 163, y = 0.5, label = "none"), color = "brown", fill = "#FFCC99", shape = 21, size = 2, stroke = 0.2) +
+  geom_point(aes(x = 186, y = 0.7, label = "none"), color = "brown", fill = "#FF9966", shape = 24, size = 2, stroke = 0.2) +
+  geom_point(aes(x = 170, y = 0.9, label = "none"), color = "brown", fill = "#FF6600", shape = 21, size = 2, stroke = 0.2) +
+  geom_point(aes(x = 197, y = 1.1, label = "none"), color = "brown", fill = "#CC3300", shape = 24, size = 2, stroke = 0.2) +
+  geom_point(aes(x = 197, y = 0.1, label = "none"), shape = 8, size = 2) +
+  geom_point(aes(x = 197, y = 0.3, label = "none"), shape = 8, size = 2) +
+  geom_point(aes(x = 206, y = 0.5, label = "none"), shape = 8, size = 2) +
+  geom_point(aes(x = 205, y = 0.7, label = "none"), shape = 8, size = 2) +
+  geom_point(aes(x = 207, y = 0.9, label = "none"), shape = 8, size = 2) +
+  geom_point(aes(x = 209, y = 1.1, label = "none"), shape = 8, size = 2) +
+  scale_fill_manual("Stage", values = c("1" = "#FFFF33", "2a" = "#FFCC33", "2b" = "#FFCC99", "3a" = "#FF9966", "3b" = "#FF6600", "4" = "#CC3300")) +
+  guides(color = guide_legend(title = "Year"), fill = "none")
 ggsave(TemperatureFinse_comb, filename = "Figures/TemperatureFinse_comb.jpeg", height = 6, width = 8)
 
 
-
-
-
-# Example temperature data
-year1 <- data.frame(doy = 1:365, temp = runif(365, 0, 30))
-year2 <- data.frame(doy = 1:365, temp = runif(365, 0, 30))
-
-# Specify snowmelt stages (start and stop doy)
-
-
-
-# Specify the doy values to mark
-marked_doy <- data.frame(doy = c(25, 60, 150, 50, 70, 155),
-                         shape = c("Circle", "Circle", "Circle", "Star", "Star", "Star"))
-
-# Create the plot
-plot <- ggplot() +
-  geom_line(data = year1, aes(x = doy, y = temp, color = "Year 1"), linewidth = 1) +
-  geom_line(data = year2, aes(x = doy, y = temp, color = "Year 2"), linewidth = 1) +
-  geom_rect(data = snowmelt_stages, aes(xmin = start_doy, xmax = stop_doy, ymin = -Inf, ymax = Inf, fill = color),
-            alpha = 0.5) +
-  geom_point(data = marked_doy, aes(x = doy, y = 0, shape = shape),
-             color = "orange", size = 3) +
-  scale_x_continuous(name = "Day of Year (doy)") +
-  scale_y_continuous(name = "Temperature") +
-  scale_color_manual(name = "Year", values = c("Year 1" = "#FF6666", "Year 2" = "#99CCCC")) +
-  scale_fill_identity() +
-  scale_shape_manual(values = c(Circle = 16, Star = 8)) +
-  theme_minimal()
-
-# Display the plot
-print(plot)
-
-
+#Snowmelt stages calculated from first handpollination (except for 2a, four flowers where hand pollinated 2nd of july, but makes the season weirdly long) to first seed collection
+#Snowmelt in 2016 was the same for all stages, for 2017 i calculated an average for all sites
+#download new temperature data?
+#star indicates peak flowering, something odd with stage 4, probably because sheep ate the flowers before hp AND we selected flowers outside of plot
 
 
 
