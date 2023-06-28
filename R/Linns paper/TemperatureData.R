@@ -5,6 +5,8 @@ library("lubridate")
 library("ggplot2")
 library("cowplot")
 library("ggpubr")
+library("lme4")
+library("nlme")
 
 ####Compare temperature data from climate station and ibutton in 2016
 
@@ -74,7 +76,10 @@ TemperatureFinsePlot <- ggplot(Temperature_Finse, aes(x = doy)) +
 ggsave(TemperatureFinsePlot, filename = "Figures/TemperatureFinsePlot.jpeg", height = 6, width = 8)
 
 
-
+#test difference 
+model2 <- lmer(Temperature_iButton ~ Adiabatic_Temperature + (1 | ID), data = Temperature_Finse)
+model <- lme(Temperature_iButton ~ Adiabatic_Temperature, random = ~ 1 | ID, data = Temperature_Finse)
+summary(model)
 
 
 ########Compare temperature data in 2016 and 2017 from climate station correlated for the adiabatic lapse rate
@@ -237,7 +242,38 @@ ggsave(TemperatureFinse_comb, filename = "Figures/TemperatureFinse_comb.jpeg", h
 #star indicates peak flowering, something odd with stage 4, probably because sheep ate the flowers before hp AND we selected flowers outside of plot
 
 
-
-
-
-
+TemperatureFinse_comb2 <- ggplot() +
+  geom_smooth(data = Temperature_all, aes(x = doy, y = Temp_2016_ALR, color = "2016"), alpha = 0) +
+  geom_smooth(data = Temperature_all, aes(x = doy, y = Temp_2017_ALR, color = "2017"), alpha = 0) +
+  labs(x = "Day of the year", y = "Average daily temperature (°C)", color = "") +
+  scale_color_manual(values = c("2016" = "#FF6666", "2017" = "#990000")) +
+  theme(legend.position = c(0.02, 0.9), legend.justification = c(0, 1),
+        panel.background = element_blank(), text = element_text(size = 14),
+        plot.title = element_text(hjust = 0, vjust = 1, margin = margin(t = 10, r = 0, b = 0, l = 0))) +
+  geom_rect(aes(xmin=195, xmax=219, ymin=1, ymax=1.2, fill = "1"), alpha=0.5) + 
+  geom_rect(aes(xmin=191, xmax=223, ymin=0.8, ymax=1, fill = "2a"), alpha=0.5) + #but two flowers were hand pollinated already 2nd of july, doy= 183
+  geom_rect(aes(xmin=201, xmax=228, ymin=0.6, ymax=0.8, fill = "2b"), alpha = 0.5) +
+  geom_rect(aes(xmin=196, xmax=228, ymin=0.4, ymax=0.6, fill = "3a"), alpha = 0.5) +
+  geom_rect(aes(xmin=204, xmax=232, ymin=0.2, ymax=0.4, fill = "3b"), alpha = 0.5) +
+  geom_rect(aes(xmin=228, xmax=247, ymin=0, ymax=0.2, fill = "4"), alpha = 0.5) +
+  geom_text(aes(x = 207, y = 1.1, label = "1: 2017"), color = "brown", size = 3) +
+  geom_text(aes(x = 203, y = 0.9, label = "2: 2016"), color = "brown", size = 3) +
+  geom_text(aes(x = 214.5, y = 0.7, label = "2: 2017"), color = "brown", size = 3) +
+  geom_text(aes(x = 214, y = 0.5, label = "3: 2016"), color = "brown", size = 3) +
+  geom_text(aes(x = 218, y = 0.3, label = "3: 2017"), color = "brown", size = 3) +
+  geom_text(aes(x = 237.5, y = 0.1, label = "4: 2016"), color = "brown", size = 3) +
+  geom_point(aes(x = 145, y = 1.1, label = "none"), color = "brown", fill = "#FFFF00", shape = 21, size = 2, stroke = 0.2) +
+  geom_point(aes(x = 169, y = 0.9, label = "none"), color = "brown", fill = "#FFCC33", shape = 24, size = 2, stroke = 0.2) +
+  geom_point(aes(x = 163, y = 0.7, label = "none"), color = "brown", fill = "#FFCC99", shape = 21, size = 2, stroke = 0.2) +
+  geom_point(aes(x = 186, y = 0.5, label = "none"), color = "brown", fill = "#FF9966", shape = 24, size = 2, stroke = 0.2) +
+  geom_point(aes(x = 170, y = 0.3, label = "none"), color = "brown", fill = "#FF6600", shape = 21, size = 2, stroke = 0.2) +
+  geom_point(aes(x = 197, y = 0.1, label = "none"), color = "brown", fill = "#CC3300", shape = 24, size = 2, stroke = 0.2) +
+  geom_point(aes(x = 197, y = 1.1, label = "none"), shape = 8, size = 2) +
+  geom_point(aes(x = 197, y = 0.9, label = "none"), shape = 8, size = 2) +
+  geom_point(aes(x = 206, y = 0.7, label = "none"), shape = 8, size = 2) +
+  geom_point(aes(x = 205, y = 0.5, label = "none"), shape = 8, size = 2) +
+  geom_point(aes(x = 207, y = 0.3, label = "none"), shape = 8, size = 2) +
+  geom_point(aes(x = 209, y = 0.1, label = "none"), shape = 8, size = 2) +
+  scale_fill_manual("Stage", values = c("1" = "#FFFF33", "2a" = "#FFCC33", "2b" = "#FFCC99", "3a" = "#FF9966", "3b" = "#FF6600", "4" = "#CC3300")) +
+  guides(color = guide_legend(title = "Year"), fill = "none")
+ggsave(TemperatureFinse_comb2, filename = "Figures/TemperatureFinse_comb2.jpeg", height = 6, width = 8)
