@@ -75,12 +75,56 @@ TemperatureFinsePlot <- ggplot(Temperature_Finse, aes(x = doy)) +
   facet_grid(~Stage)
 ggsave(TemperatureFinsePlot, filename = "Figures/TemperatureFinsePlot.jpeg", height = 6, width = 8)
 
+ggplot(Temperature_Finse, aes(x = MASL)) +
+  geom_smooth(aes(y = Temperature_iButton, color = "Temperature iButton")) +
+  #geom_smooth(aes(y = Adiabatic_Temperature, color = "Temperature Climate Station")) +
+  labs(x = "Day of the year", y="Average daily temperature (°C)", color = "") +
+  scale_color_manual(values = c("Temperature iButton" = "#FF6666", "Temperature Climate Station" = "#99CCCC")) +
+  theme(legend.position="bottom", panel.background = element_blank(), text = element_text(size = 8)) #+
+  facet_grid(~Stage)
+
+############################################
+###########################################
+  
+### Calculate difference in temperature between highest and lowest site
+Temperature_Finse2 <- Temperature_Finse %>% 
+  select(-Temperature_Station, -MASLCorr, -Adiabatic_Temperature) %>% 
+  filter(MASL == 1489 | MASL == 1411) %>% 
+  filter(doy > 195)
+
+ggplot(pivoted_temp, aes(x = doy, y = Temp_Diff)) +
+  geom_smooth(method = lm)
+
+
+avg_temp <- Temperature_Finse2 %>%
+  group_by(Stage, doy) %>%
+  summarise(avg_temperature = mean(Temperature_iButton))
+
+# Pivot the data to have separate columns for E and L stages
+pivoted_temp <- pivot_wider(avg_temp, names_from = Stage, values_from = avg_temperature)
+
+# Calculate the temperature difference (E - L)
+pivoted_temp <- pivoted_temp %>%
+  mutate(Temp_Diff = l-e)
+
+# View the resulting data frame
+print(pivoted_temp)
+
+avg_temp_diff <- mean(pivoted_temp$Temp_Diff)
+
+#total average difference of 0.9 degrees between 1411 and 1489 MASL
+
+############################################
+###########################################
+
 
 #test difference 
 model2 <- lmer(Temperature_iButton ~ Adiabatic_Temperature + (1 | ID), data = Temperature_Finse)
 model <- lme(Temperature_iButton ~ Adiabatic_Temperature, random = ~ 1 | ID, data = Temperature_Finse)
 summary(model)
 
+
+midel3 <- lme(Temperature_iButton ~ )
 
 ########Compare temperature data in 2016 and 2017 from climate station correlated for the adiabatic lapse rate
 
