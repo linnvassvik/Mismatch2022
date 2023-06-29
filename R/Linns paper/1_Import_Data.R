@@ -1,5 +1,3 @@
-#####SLETT#####
-
 ##### PLANT POLLINATOR DATA FINSE 2016 AND 2017 ######
 # import and prepare plant-pollinator data
 
@@ -7,7 +5,6 @@
 library("tidyverse")
 library("lubridate")
 library("readxl")
-library("readr")
 
 pn <- . %>% print(n = Inf)
 
@@ -15,131 +12,78 @@ pn <- . %>% print(n = Inf)
 #### READ IN DATA 2016 ####
 
 # PHENOLOGY
-pheno16 <- read_csv2("Data_plant_pollinator_Finse_2016_2017/2016/RANfenologi.csv", col_names = FALSE, col_types = NULL)
-pheno16 <- as.data.frame(t(pheno16), col_names = FALSE) # transpose data
+pheno16 <- read.csv("Data_plant_pollinator_Finse_2016_2017/2016/RANfenologi.csv", header = FALSE, sep = ";", stringsAsFactors=FALSE)
+pheno16 <- as.data.frame(t(pheno16), stringsAsFactors = FALSE) # transpose data
 names(pheno16) <- pheno16[1,] # first column = name
 
 pheno16 <- pheno16 %>% 
   slice(-1) %>% # remove first column
   gather(key = site, value = flowering, -Dato, -Tid, -Vaer, -Hvem) %>% 
   as_tibble() %>% # lage en tabel
-  filter(!is.na(flowering)) %>% 
+  filter(flowering != "") %>% 
   mutate(date = dmy(Dato)) %>% # do we need time?
   select(-Dato, -Tid) %>% 
   mutate(flowering = as.numeric(flowering)) %>% 
   mutate(stage = factor(substring(site, 1,1))) %>% 
   mutate(plot = factor(substring(site, 4,4))) %>% 
-  mutate(site = factor(substring(site, 2,3))) %>%
-  mutate(day = yday(date)) %>%
-  mutate(year = year(date)) %>% 
-  #mutate(day = as.Date(date,format="%Y-%m-%d"), year = year(date)) %>%  #denne fungerer ikke, men brukt koden over isteden for
+  mutate(site = factor(substring(site, 2,3))) %>% 
+  mutate(day = as.Date(date,format="%Y-%m-%d"), year = year(date)) %>% 
   rename(weather = Vaer, name = Hvem)
-
-
-
-####### sidenote ########
-peak16 <- ggplot(pheno16, aes(x = day, y = flowering, color = stage)) +
-  geom_smooth()
-#Get peak and first flowering for all stages  
-smooth_data <- ggplot_build(peak16)$data[[1]]
-
-peak_values16 <- smooth_data %>%
-  group_by(group) %>%
-  filter(y == max(y)) %>%
-  select(group, x, y) %>%
-  ungroup()
-
-print(peak_values16)
-
-first_flowering <- pheno16 %>%
-  filter(flowering == 1) %>%
-  group_by(stage) %>%
-  summarise(first_flowering_doy = min(day))
-
-print(first_flowering)
+  
 
 # POLLINATOR OBSERVATIONS
-pollination16 <- read_csv2("Data_plant_pollinator_Finse_2016_2017/2016/RanunculusPollinator.csv", col_names = TRUE, col_types = NULL)
-
+pollination16 <- read.csv("Data_plant_pollinator_Finse_2016_2017/2016/RanunculusPollinator.csv", header = TRUE, sep = ";", stringsAsFactors=FALSE)
 pollination16 <- pollination16 %>%
   as_tibble() %>% 
-  filter(!Tid == "") %>% # slette alle kolloner med Na
+  filter(!Tid == "") %>% # slette alle koloner med Na
   # Fix date variables
-  mutate(date = dmy_hms(paste(Dato, Tid))) %>%# lime sammen dato å tid
+  mutate(date = dmy_hm(paste(Dato, Tid))) %>%# lime sammen dato å tid
   mutate(minutes = (floor(minute(date)/10)*10)) %>%
   mutate(date = ymd_hm(paste0(format(date, "%Y-%m-%d %H:"), minutes))) %>% # making 10 minutes steps
-  mutate(day = yday(date)) %>%
-  mutate(year = year(date)) %>% 
+  mutate(year = year (date), day = as.Date(date,format="%Y-%m-%d")) %>%
   # Fix  other variables
   mutate(stage = substring(Site, 1,1), site = substring(Site, 2,3)) %>% # lage to nye variabler, stage og site
   mutate(stage = factor(stage, levels = c("E", "M", "L")), site = factor(site)) %>%  # bestemme rekkefölgen for stage
-  mutate(fly = as.numeric(Fluer)) %>%  
-  mutate(other = as.numeric(andre)) %>% # make variables numeric
+  mutate(fly = as.numeric(Fluer), other = as.numeric(andre)) %>% # make variables numeric
   mutate(weather = plyr::mapvalues(sol.og.sky, c("overskyet","overskyet_littsol","sol_littsky","sol", "sol "), c("cloudy","cloudy_sun","sun_cloud","sun", "sun"))) %>% 
   mutate(wind = as.factor(vind)) %>% 
-  mutate(remark = paste(regn, sommerfugler)) %>% #hva gjør denne?
+  mutate(remark = paste(regn, sommerfugler)) %>% 
   select(-Tid, -Fluer, -Site, -Dato, -minutes, -sol.og.sky, -vind, -andre, -regn, -sommerfugler) # sletter her koloner ikke rekker, - betyr ta vekk
-
 
 ########################################################################
 
 #### READ IN DATA 2017 ####
 
 # PHENOLOGY
-pheno17 <- read_csv2("Data_plant_pollinator_Finse_2016_2017/2017/17-10-06_Phenology.csv", col_names = FALSE, col_types = NULL)
+pheno17 <- read.csv2("Data_plant_pollinator_Finse_2016_2017/2017/17-10-06_Phenology.csv", header = FALSE, sep = ";", stringsAsFactors=FALSE)
 pheno17 <- pheno17[-c(155:186),] # remove F09 and F10
-pheno17 <- as_tibble(t(pheno17)) # transpose data
-colnames(pheno17) <- pheno17[1,] # first column = name
+pheno17 <- as_data_frame(t(pheno17)) # transpose data
+names(pheno17) <- pheno17[1,] # first column = name
 
 pheno17 <- pheno17 %>% 
   slice(-1) %>% # remove first column
   gather(key = site, value = flowering, -Date, -Time, -Weather, -Name) %>% 
-  as_tibble() %>% # lage en tabel
-  mutate(Time = substr(Time, 1, 5)) %>% # do we need time?
+  filter(flowering != "") %>% 
+  #mutate(Time = substr(Time, 1, 5)) %>% # do we need time?
+  mutate(date = dmy(Date)) %>% 
+  select(-Date, -Time) %>% 
+  mutate(flowering = as.numeric(flowering)) %>% 
   mutate(stage = factor(substring(site, 1,1))) %>% 
   mutate(plot = factor(substring(site, 4,4))) %>% 
   mutate(site = factor(substring(site, 2,3))) %>% 
-  #from here the dataset starts to get weird
-  mutate(flowering = as.numeric(flowering)) %>% 
-  filter(!is.na(flowering)) %>% ##Puts site names in flowering column (but works on 16 dataset)
-  mutate(date = dmy(Date)) %>% 
-   mutate(day = yday(date)) %>%
-  mutate(year = year(date)) %>%
-  #mutate(day = as.Date(date,format="%Y-%m-%d"), year = year(date)) %>%
-  select(-Date, -Time) %>% 
+  mutate(day = as.Date(date,format="%Y-%m-%d"), year = year(date)) %>%
   rename(weather = Weather, name = Name)
 
 
-####### sidenote ########
-peak17 <- ggplot(pheno17, aes(x = day, y = flowering, color = stage)) +
-  geom_smooth()
-#Get peak and first flowering for all stages  
-smooth_data <- ggplot_build(peak17)$data[[1]]
-
-peak_values17 <- smooth_data %>%
-  group_by(group) %>%
-  filter(y == max(y)) %>%
-  select(group, x, y) %>%
-  ungroup()
-
-print(peak_values17)
-
-first_flowering17 <- pheno17 %>%
-  filter(flowering == 1) %>%
-  group_by(stage) %>%
-  summarise(first_flowering_doy = min(day))
-
-print(first_flowering17)
-
 # POLLINATOR OBSERVATIONS
-pollination17 <- read_csv2("Data_plant_pollinator_Finse_2016_2017/2017/17-10-31_Pollinatorobservations.csv", col_names = TRUE, col_types = NULL)
+pollination17 <- read.csv("Data_plant_pollinator_Finse_2016_2017/2017/17-10-31_Pollinatorobservations.csv", header = TRUE, sep = ";", stringsAsFactors=FALSE)
 
 pollination17 <- pollination17 %>%
   #select(-X,-wind.categories., -X.1, -X.2, -X.3, -X.4) %>% 
   as_tibble() %>% 
   filter(!Time == "") %>% # slette alle koloner med Na
   # Fix date variables
-  mutate(date = dmy_hms(paste(Date, Time))) %>%# lime sammen dato å tid
+  mutate(date = dmy_hm(paste(Date, Time))) %>%# lime sammen dato å tid
   mutate(minutes = (floor(minute(date)/10)*10)) %>% # round all the dates to 10 minutes
   mutate(date = ymd_hm(paste0(format(date, "%Y-%m-%d %H:"), minutes))) %>% # making 10 minutes steps
   mutate(year = year (date), day = as.Date(date, format="%Y-%m-%d")) %>%
@@ -156,7 +100,6 @@ pollination17 <- pollination17 %>%
 
 ### IMPORT SITE AND CLIMATE DATA ###
 sites <- read_excel("Data_plant_pollinator_Finse_2016_2017/Sites.xlsx")
-
 sites <- sites %>% 
   filter(!is.na(stage)) %>% # remove empty columns
   mutate(area = width * length) %>% 
@@ -169,8 +112,8 @@ sites <- sites %>%
 
 #2016
 snomelt16 <- tibble(year = c(rep(2016, 3)),
-                    stage = c("E", "M", "L"),
-                    Snowmelt_date = c("17.06.2016", "04.07.2016", "15.07.2016"))
+                           Stage = c("E", "M", "L"),
+                           Snowmelt_date = c("17.06.2016", "04.07.2016", "15.07.2016"))
 
 snowmelt16 <- snomelt16 %>% 
   mutate(Snowmelt_date = dmy(Snowmelt_date)) %>% 
@@ -183,28 +126,46 @@ Date_snowmelt <- read_excel("Data_plant_pollinator_Finse_2016_2017/2017/Date_sno
 Date_snowmelt <- Date_snowmelt %>% 
   mutate(doy = yday(Snowmelt_date)) %>% 
   mutate(stage = as.factor(stage), site=as.factor(site)) %>% 
+  mutate(Snowmelt_date = as.Date(Snowmelt_date)) %>% 
   rename(siteID=site) %>% 
-  mutate(doy = yday(Snowmelt_date))
+  mutate(doy = yday(Snowmelt_date)) 
 
 ########################################################################
 
 ##### WEATHER THROUGHOUT SEASON #####
-weather16 <- read_excel("Data_plant_pollinator_Finse_2016_2017/2016/Finse_weather_2016.xlsx")
-colnames(weather16) <- iconv(colnames(weather16), "latin1", "ASCII", sub = "q")
+# old code
+# weather16 <- read_excel("Data_plant_pollinator_Finse_2016_2017/2016/Finse_weather_2016.xlsx")
+# colnames(weather16) <- iconv(colnames(weather16), "latin1", "ASCII", sub = "q")
+#   
+# Weather16 <- weather16 %>% 
+#   rename("date" = "Dato", "temperature" = "Middeltemperatur", "precipitation" = "Nedbqqr") %>% 
+#   mutate(doy = yday(date))
+# 
+# 
+# weather17 <- read_excel("Data_plant_pollinator_Finse_2016_2017/2017/Finse_weather.xlsx")
+# 
+# Weather <- weather17 %>% 
+#   mutate(precipitation = as.numeric(precipitation)) %>%
+#   mutate(doy = yday(date)) %>% 
+#   bind_rows(Weather16) %>% 
+#   mutate(tempAboveZero = ifelse(temperature > 0, temperature, 0))
 
-Weather16 <- weather16 %>% 
-  rename("date" = "Dato", "temperature" = "Middeltemperatur", "precipitation" = "Nedbqqr") %>% 
-  mutate(doy = yday(date))
 
+temp16 <- read_excel("Data_plant_pollinator_Finse_2016_2017/2016/weather_2016.xlsx") |> 
+  mutate(date = as.Date(date))
 
-weather17 <- read_excel("Data_plant_pollinator_Finse_2016_2017/2017/Finse_weather.xlsx")
+temp17 <- read_excel("Data_plant_pollinator_Finse_2016_2017/2017/weather_2017.xlsx") |> 
+  filter(!is.na(Stasjon)) |> 
+  select(date = `Tid(norsk normaltid)`, temperature = `Middeltemperatur (døgn)`) |> 
+  mutate(date = dmy(date),
+         temperature = as.numeric(temperature))
 
-Weather <- weather17 %>% 
-  mutate(precipitation = as.numeric(precipitation)) %>%
-  mutate(doy = yday(date)) %>% 
-  bind_rows(Weather16) %>% 
-  mutate(tempAboveZero = ifelse(temperature > 0, temperature, 0))
+Weather <- bind_rows(temp16, temp17) |> 
+  filter(!is.na(date)) |> 
+  mutate(doy = yday(date)) |> 
+  select(date, doy, temperature)
 
+  
 
 ########################bind_rows()################################################
 
@@ -223,8 +184,7 @@ phenology <- pheno16 %>%
 
 ### POLLINATION
 pollination <- pollination16 %>% 
-  bind_rows(pollination17 %>% 
-              mutate(day = as.numeric(day))) %>% 
+  bind_rows(pollination17) %>% 
   left_join(sites, by = c("stage", "site")) %>%  # add area of each site
   # add climate data
   #left_join(Temperature, by = c("date" = "date", "stage" = "stage", "site" = "site"))
@@ -331,30 +291,131 @@ Biomass <- Biomass %>%
 
 ### Cumulative temperature for pollinated plants
 
-Weather2 <- Weather %>% 
-  select(doy, temperature, tempAboveZero, precipitation)
+# Weather2 <- Weather %>% 
+#   select(doy, temperature, tempAboveZero, precipitation)
+# 
+# Weather2 %>% 
+#   filter(doy > 193, doy < 228) %>% 
+#   group_by() %>% 
+#   summarise(sum(tempAboveZero), sum(precipitation))
 
-Weather2 %>% 
-  filter(doy > 193, doy < 228) %>% 
-  group_by() %>% 
-  summarise(sum(tempAboveZero), sum(precipitation))
-
+# get period for temp before pollination for each plot (from first HP to collected seeds)
 Period <- Biomass %>% 
   filter(Treatment == "Pollinated") %>% 
   group_by(Year, BlockID) %>% 
   summarise(MinDate = min(Date1, na.rm = TRUE), MaxDate = max(Collected, na.rm = TRUE))
 
-MASL <- read_csv2("Data_plant_pollinator_Finse_2016_2017/MASL.csv", col_names = TRUE, col_types = NULL)
+  
+# get elevation for each plot
+MASL <- read.csv("Data_plant_pollinator_Finse_2016_2017/MASL.csv", header = TRUE, sep = ";", stringsAsFactors=FALSE)
 
-WeatherAndBiomass <- Biomass %>% 
-  select(Year, Stage, siteID, BlockID, Plant, Treatment, Biomass, Seed_mass, Seed_number, Ovule_number, Tot_Ovule, Seed_potential, MeanFlowers, MeanVisit) %>% 
+meta <- Biomass %>% 
+  select(Year, Stage, siteID, BlockID, Plant, Treatment) %>% 
+  # add pollination period for each plot
   left_join(Period, by = c("BlockID", "Year")) %>%
-  left_join(MASL, by = c("siteID")) %>%
-  crossing(Weather2) %>%
-  mutate(TempAdi = temperature - Adiabatic.temp) %>% #trekt i fra den adiabatiske temperaturen, mer korrekt temp pr site
-  mutate(tempAboveZeroAdi = ifelse(TempAdi > 0, TempAdi, 0)) %>%
-  select(-tempAboveZero) %>%
-  filter(doy > MinDate, doy < MaxDate) %>%
+  # add elevation and temp correction
+  left_join(MASL, by = c("siteID"))
+
+
+meta16_a <- meta |> 
+  filter(Year == 2016) |> 
+  crossing(Weather |> 
+  filter(year(date) == 2016)) %>% 
+  #trekt i fra den adiabatiske temperaturen, mer korrekt temp pr site
+  mutate(TempAdi = temperature - Adiabatic.temp) %>% 
+  mutate(tempAboveZeroAdi = ifelse(TempAdi > 0, TempAdi, 0)) %>% 
+  filter(doy > MinDate, doy < MaxDate)
+  
+meta16_b <- meta %>% 
+  filter(Year == 2016) |> 
+  crossing(Weather |> 
+             filter(year(date) == 2016)) %>% 
+  right_join(snowmelt16, by = c("Stage")) %>% 
+  select(-Snowmelt_date) %>% 
+  rename (Snowmelt_doy = doy.y) %>% 
+  rename(doy = doy.x) %>% 
+  #trekt i fra den adiabatiske temperaturen, mer korrekt temp pr site
+  mutate(TempAdi = temperature - Adiabatic.temp) %>% 
+  mutate(tempAboveZeroAdi = ifelse(TempAdi > 0, TempAdi, 0)) %>% 
+  # remove climate data where doy is smaller/large than doy
+  filter(doy > Snowmelt_doy, doy < MinDate)
+
+  
+meta17_a <- meta |> 
+  filter(Year == 2017) |> 
+  crossing(Weather |> 
+             filter(year(date) == 2017)) %>% 
+  #trekt i fra den adiabatiske temperaturen, mer korrekt temp pr site
+  mutate(TempAdi = temperature - Adiabatic.temp) %>% 
+  mutate(tempAboveZeroAdi = ifelse(TempAdi > 0, TempAdi, 0)) %>% 
+  filter(doy > MinDate, doy < MaxDate) %>% 
+  group_by(Year, BlockID, Plant)
+
+meta17_b <- meta %>% 
+  filter(Year == 2017) |> 
+  crossing(Weather |> 
+             filter(year(date) == 2017)) %>% 
+  right_join(Date_snowmelt, by = c("siteID")) %>% 
+  select(-Snowmelt_date, -stage) %>% 
+  rename (Snowmelt_doy = doy.y) %>% 
+  rename(doy = doy.x) %>% 
+  #trekt i fra den adiabatiske temperaturen, mer korrekt temp pr site
+  mutate(TempAdi = temperature - Adiabatic.temp) %>% 
+  mutate(tempAboveZeroAdi = ifelse(TempAdi > 0, TempAdi, 0)) %>% 
+  # remove climate data where doy is smaller/large than doy
+  filter(doy > Snowmelt_doy, doy < MaxDate) %>% 
+  group_by(Year, BlockID, Plant)
+  
+  
+WeatherAndBiomass1 <- bind_rows(meta16_a, meta17_a) |> 
   group_by(Year, BlockID, Plant) %>%
-  summarise(CumTemp = sum(tempAboveZeroAdi, na.rm = TRUE), CumPrec = sum(precipitation, na.rm = TRUE)) %>% 
+  summarise(CumTemp_after = sum(tempAboveZeroAdi, na.rm = TRUE)) |> 
   left_join(Biomass, by = c("Year", "BlockID", "Plant"))
+
+WeatherAndBiomass2 <- bind_rows(meta16_b, meta17_b) |> 
+  group_by(Year, BlockID, Plant) %>%
+  summarise(CumTemp_before = sum(tempAboveZeroAdi, na.rm = TRUE)) |> 
+  left_join(Biomass, by = c("Year", "BlockID", "Plant")) %>% 
+  select(-c(Biomass:MeanVisit))
+  
+WeatherAndBiomass <- WeatherAndBiomass1 %>%  
+  left_join(WeatherAndBiomass2) %>%  
+  group_by(Year, BlockID, Plant) %>% 
+  select(Year, BlockID, Plant, CumTemp_before, everything())
+
+#rescale
+d1 <- as_tibble(x = scale(WeatherAndBiomass$CumTemp_before))
+d3 <- as_tibble(x = scale(WeatherAndBiomass$CumTemp_after))
+d2 <- as_tibble(x = scale(WeatherAndBiomass$MeanFlowers))
+
+WeatherAndBiomass <- WeatherAndBiomass %>% 
+  bind_cols(d1, d2, d3) %>% 
+  rename(CumTemp_before.cen = V1...29, MeanFlower.cen = V1...30, CumTemp_after.cen = V1...31,)
+
+# prep data
+dat <- WeatherAndBiomass |> 
+  mutate(Stage2 = case_when(Stage == "F" ~ 1,
+                            Stage == "E" ~ 2,
+                            Stage == "M" ~ 3,
+                            TRUE ~ 4),
+         Stage = factor(Stage, levels = c("F", "E", "M", "L"))) |> 
+  #Stage2 = factor(Stage2, levels = c("1", "2", "3", "4"))) |> 
+  # make sure that Control Treatment comes first
+  mutate(Treatment = factor(Treatment, levels = c("Control", "Pollinated")))
+
+
+
+# old code
+# WeatherAndBiomass <- Biomass %>%
+#   dplyr::select(Year, Stage, siteID, BlockID, Plant, Treatment, Biomass, Seed_mass, Seed_number, Ovule_number, Tot_Ovule, Seed_potential, MeanFlowers, MeanVisit) %>%
+#   left_join(Period, by = c("BlockID", "Year")) %>%
+#   left_join(MASL, by = c("siteID")) %>%
+#   crossing(Weather2) %>%
+#   mutate(TempAdi = temperature - Adiabatic.temp) %>% #trekt i fra den adiabatiske temperaturen, mer korrekt temp pr site
+#   mutate(tempAboveZeroAdi = ifelse(TempAdi > 0, TempAdi, 0)) %>%
+#   select(-tempAboveZero) %>%
+#   filter(doy > MinDate, doy < MaxDate) %>%
+#   group_by(Year, BlockID, Plant) %>%
+#   summarise(CumTemp = sum(tempAboveZeroAdi, na.rm = TRUE), CumPrec = sum(precipitation, na.rm = TRUE)) %>%
+#   left_join(Biomass, by = c("Year", "BlockID", "Plant"))
+
