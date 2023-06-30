@@ -1,6 +1,7 @@
 source("R/Linns paper/1_Import_Data.R")
 
 library(lme4)
+library(nlme)
 
 ### Seed mass 2016
 dat16 <- dat |> 
@@ -21,44 +22,197 @@ summary(sm_model_17)
 #When removing biomass 2016 ends up with stage as sifnificant (more than last time), and 2017 with flower abundance (more than before) and temp (same importance)
 
 #2016 seperate per stage and year
-dat16_S2 <- dat |> 
+dat16_S2 <- dat16 |> 
   filter(Stage2 == 2)
 
 sm_model_16_S2 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_before.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat16_S2)
 summary(sm_model_16_S2)
 
-dat16_S3 <- dat |> 
+dat16_S3 <- dat16 |> 
   filter(Stage2 == 3)
 
 sm_model_16_S3 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_before.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat16_S3)
 summary(sm_model_16_S3)
 
-dat16_S4 <- dat |> 
+dat16_S4 <- dat16 |> 
   filter(Stage2 == 4)
 
 sm_model_16_S4 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_before.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat16_S4)
 summary(sm_model_16_S4)
 
 #2017 seperate per stage and year
-dat17_S1 <- dat |> 
+dat17_S1 <- dat17 |> 
   filter(Stage2 == 1)
 
 sm_model_17_S1 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_before.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat17_S1)
 summary(sm_model_17_S1)
 
-dat17_S2 <- dat |> 
+dat17_S2 <- dat17 |> 
   filter(Stage2 == 2)
 
 sm_model_17_S2 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_before.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat17_S2)
 summary(sm_model_17_S2)
 
-dat17_S3 <- dat |> 
+dat17_S3 <- dat17 |> 
   filter(Stage2 == 3)
 
 sm_model_17_S3 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_before.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat17_S3)
 summary(sm_model_17_S3)
 
-#Summary: Stage 1: Temp, 2: Flower abundance, 3: Temp + flower abundance, 4 : None (flower abundance = 0.053)
+#Summary: Stage 1: Temp_before, 2: -, 3: Temp_after, 4 : -
+
+### Seed:ovule ratio/seed potential
+sp_model <- glmer(Seed_number ~ Stage2 + MeanFlower.cen + CumTemp_before.cen + CumTemp_after.cen + Treatment + (1|siteID), family = poisson, data = dat16)
+summary(sp_model)
+#Snowmeltstage and Hand pollinated treatment significant.
+
+#2016 seperate per stage
+dat16_S2 <- dat16 |> 
+  filter(Stage2 == 2)
+
+sp_model_S2 <- glmer(Seed_number ~ MeanFlower.cen + CumTemp_before.cen + CumTemp_after.cen + Treatment + (1|siteID), family = poisson, data = dat16_S2)
+summary(sp_model_S2)
+#Number of flowers (positive) and hand pollinated treatment (negative) significant
+
+dat16_S3 <- dat16 |> 
+  filter(Stage2 == 3)
+
+sp_model_S3 <- glmer(Seed_number ~ MeanFlower.cen + CumTemp_before.cen + CumTemp_after.cen + Treatment + (1|siteID), family = poisson, data = dat16_S3)
+summary(sp_model_S3)
+#Temperature before and after flowering significant (positive)
+
+dat16_S4 <- dat16 |> 
+  filter(Stage2 == 4)
+
+sp_model_S4 <- glmer(Seed_number ~ MeanFlower.cen + CumTemp_before.cen + CumTemp_after.cen + Treatment + (1|siteID), family = poisson, data = dat16_S4)
+summary(sp_model_S4)
+#singular fit issues, temperature before flowering (positive) and number of flowers (positive) significant
+
+#plot
+dat16 %>% 
+  ggplot(aes(y = Seed_number, x = MeanFlowers)) +
+  geom_smooth() +
+  facet_wrap(~Stage2)
 
 
-#Make temperature into two different variables. Before and after flowering
+
+###########################
+#Look into variables concerning pollination
+
+#Seed mass and pollination
+dat16_clean <- dat16[!is.infinite(dat16$MeanVisit), ]
+
+Poll_model_16 <- lme(log(Seed_mass) ~ Stage2 + MeanFlower.cen + MeanVisit + Treatment, random =  ~ 1|siteID, data = dat16_clean)
+summary(Poll_model_16)
+#stage 
+
+Poll_model_17 <- lme(log(Seed_mass) ~ Stage2 + MeanFlower.cen + MeanVisit + Treatment, random =  ~ 1|siteID, data = dat17)
+summary(Poll_model_17)
+
+
+#2016 seperate per stage and year
+dat16_S2 <- dat16_clean |> 
+  filter(Stage2 == 2)
+
+Poll_model_16_S2 <- lme(log(Seed_mass) ~ MeanFlower.cen + MeanVisit + Treatment, random =  ~ 1|siteID, data = dat16_S2)
+summary(Poll_model_16_S2)
+
+dat16_S3 <- dat16_clean |> 
+  filter(Stage2 == 3)
+
+Poll_model_16_S3 <- lme(log(Seed_mass) ~ MeanFlower.cen + MeanVisit + Treatment, random =  ~ 1|siteID, data = dat16_S3)
+summary(Poll_model_16_S3)
+
+dat16_S4 <- dat16_clean |> 
+  filter(Stage2 == 4)
+
+Poll_model_16_S4 <- lme(log(Seed_mass) ~ MeanFlower.cen + MeanVisit + Treatment, random =  ~ 1|siteID, data = dat16_S4)
+summary(Poll_model_16_S4)
+
+#2017 seperate per stage and year
+dat17_S1 <- dat17 |> 
+  filter(Stage2 == 1)
+
+Poll_model_17_S1 <- lme(log(Seed_mass) ~ MeanFlower.cen + MeanVisit + Treatment, random =  ~ 1|siteID, data = dat17_S1)
+summary(Poll_model_17_S1)
+
+dat17_S2 <- dat17 |> 
+  filter(Stage2 == 2)
+
+Poll_model_17_S2 <- lme(log(Seed_mass) ~ MeanFlower.cen + MeanVisit + Treatment, random =  ~ 1|siteID, data = dat17_S2)
+summary(Poll_model_17_S2)
+#mean flowers significant
+
+dat17_S3 <- dat17 |> 
+  filter(Stage2 == 3)
+
+Poll_model_17_S3 <- lme(log(Seed_mass) ~ MeanFlower.cen + MeanVisit + Treatment, random =  ~ 1|siteID, data = dat17_S3)
+summary(Poll_model_17_S3)
+
+#plot
+dat %>% 
+  ggplot(aes(y = MeanVisit, x = MeanFlowers, color =Stage)) +
+  geom_point() +
+  geom_smooth(method = lm, expand = TRUE) +
+  facet_wrap(~Year, scales ="free_x")
+
+
+### Seed:ovule ratio/seed potential
+sp_model_Poll <- glmer(Seed_number ~ Stage2 + MeanFlower.cen + MeanVisit + Treatment + (1|siteID), family = poisson, data = dat16_clean)
+summary(sp_model_Poll)
+#Snowmeltstage and Hand pollinated treatment significant.
+
+#2016 seperate per stage
+dat16_S2 <- dat16_clean |> 
+  filter(Stage2 == 2)
+
+sp_model_S2_Poll <- glmer(Seed_number ~ MeanFlower.cen + MeanVisit + Treatment + (1|siteID), family = poisson, data = dat16_S2)
+summary(sp_model_S2_Poll)
+#Number of flowers (positive) and hand pollinated treatment (negative) significant
+
+dat16_S3 <- dat16_clean |> 
+  filter(Stage2 == 3)
+
+sp_model_S3_Poll <- glmer(Seed_number ~ MeanFlower.cen + MeanVisit + Treatment + (1|siteID), family = poisson, data = dat16_S3)
+summary(sp_model_S3_Poll)
+#Mean flowers significant
+
+dat16_S4 <- dat16_clean |> 
+  filter(Stage2 == 4)
+
+sp_model_S4_Poll <- glmer(Seed_number ~ MeanFlower.cen + MeanVisit + Treatment + (1|siteID), family = poisson, data = dat16_S4)
+summary(sp_model_S4_Poll)
+
+
+####################################
+### Correlation between tested factors
+
+
+library(reshape2)
+library(ggcorrplot)
+
+# Create a subset of your data with the relevant variables
+subset_data <- dat[c("Biomass", "CumTemp_before.cen", "CumTemp_after.cen", "Stage2", "MeanFlower.cen", "MeanVisit")]
+
+# Calculate the Pearson correlation matrix
+cor_matrix <- cor(subset_data, method = "pearson")
+
+# Convert correlation matrix to long format
+cor_matrix_long <- melt(cor_matrix)
+# Print the correlation matrix
+print(cor_matrix)
+
+
+ggcorrplot::ggcorrplot(cor_matrix, type = "lower", lab = TRUE)
+
+ggplot(cor_matrix_long, aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient(low = "blue", high = "red") +
+  geom_text(aes(label = round(value, 2)), color = "black", size = 3) +
+  labs(x = "", y = "") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  coord_fixed()
+
+#correlation between temperature before and after first HP, but very weak correlation on the rest?
+
