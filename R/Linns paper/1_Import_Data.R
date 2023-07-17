@@ -151,8 +151,10 @@ Date_snowmelt <- Date_snowmelt %>%
 #   mutate(tempAboveZero = ifelse(temperature > 0, temperature, 0))
 
 
-temp16 <- read_excel("Data_plant_pollinator_Finse_2016_2017/2016/weather_2016.xlsx") |> 
-  mutate(date = as.Date(date))
+temp16 <- read_excel("Data_plant_pollinator_Finse_2016_2017/2016/weather_2016.xlsx")
+  
+temp16 <- temp16 %>% 
+  mutate(date = dmy(date))
 
 temp17 <- read_excel("Data_plant_pollinator_Finse_2016_2017/2017/weather_2017.xlsx") |> 
   filter(!is.na(Stasjon)) |> 
