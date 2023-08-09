@@ -17,10 +17,10 @@ dat17 <- dat |>
 
 #Run models without biomass
 
-sm_model_16 <- lme(log(Seed_mass) ~ Stage2 + MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat16)
+sm_model_16 <- lme(log(Seed_mass) ~ Stage2 + MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|BlockID, data = dat16)
 summary(sm_model_16)
 
-sm_model_17 <- lme(log(Seed_mass) ~ Stage2 + MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat17)
+sm_model_17 <- lme(log(Seed_mass) ~ Stage2 + MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|BlcokID, data = dat17)
 summary(sm_model_17)
 
 #When removing biomass 2016 ends up with stage as sifnificant (more than last time), and 2017 with flower abundance (more than before) and temp (same importance)
@@ -63,20 +63,23 @@ dat17_S3 <- dat17 |>
 sm_model_17_S3 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat17_S3)
 summary(sm_model_17_S3)
 
-#Summary: Stage 1: Temp_before, 2: -, 3: Temp_after, 4 : -
+
+
+###############
+###############
 
 ### Seed:ovule ratio/seed potential
-sp_model <- glmer(Seed_number ~ Stage2 + MeanFlower.cen + CumTemp_after.cen + Treatment + (1|siteID), offset = Ovule_number, family = poisson, data = dat16)
+sp_model <- glmer(Seed_potential ~ Stage + MeanFlower.cen + CumTemp_after.cen + Treatment + (1|siteID), family = binomial, data = dat16)
 summary(sp_model)
-#Snowmeltstage and Hand pollinated treatment significant.
+
 
 #2016 seperate per stage
 dat16_S2 <- dat16 |> 
   filter(Stage2 == 2)
 
-sp_model_S2 <- glmer(Seed_number ~ MeanFlower.cen + CumTemp_before.cen + CumTemp_after.cen + Treatment + (1|siteID), family = poisson, data = dat16_S2)
+sp_model_S2 <- glmer(Seed_potential ~ MeanFlower.cen + CumTemp_before.cen + CumTemp_after.cen + Treatment + (1|siteID), family = binomial, data = dat16_S2)
 summary(sp_model_S2)
-#Number of flowers (positive) and hand pollinated treatment (negative) significant
+
 
 dat16_S3 <- dat16 |> 
   filter(Stage2 == 3)
@@ -106,11 +109,11 @@ dat16 %>%
 #Seed mass and pollination
 dat16_clean <- dat16[!is.infinite(dat16$MeanVisit), ]
 
-Poll_model_16 <- lme(log(Seed_mass) ~ MeanFlower.cen + MeanVisit, random =  ~ 1|siteID, data = dat16_clean)
+Poll_model_16 <- lme(log(Seed_mass) ~ MeanFlower.cen * MeanVisit, random =  ~ 1|siteID, data = dat16_clean)
 summary(Poll_model_16)
-#stage 
 
-Poll_model_17 <- lme(log(Seed_mass) ~ MeanFlower.cen + MeanVisit, random =  ~ 1|siteID, data = dat17)
+
+Poll_model_17 <- lme(log(Seed_mass) ~ MeanFlower.cen * MeanVisit, random =  ~ 1|siteID, data = dat17)
 summary(Poll_model_17)
 
 
@@ -118,39 +121,39 @@ summary(Poll_model_17)
 dat16_S2 <- dat16_clean |> 
   filter(Stage2 == 2)
 
-Poll_model_16_S2 <- lme(log(Seed_mass) ~ MeanFlower.cen + MeanVisit, random =  ~ 1|siteID, data = dat16_S2)
+Poll_model_16_S2 <- lme(log(Seed_mass) ~ MeanFlower.cen * MeanVisit, random =  ~ 1|siteID, data = dat16_S2)
 summary(Poll_model_16_S2)
 
 dat16_S3 <- dat16_clean |> 
   filter(Stage2 == 3)
 
-Poll_model_16_S3 <- lme(log(Seed_mass) ~ MeanFlower.cen + MeanVisit, random =  ~ 1|siteID, data = dat16_S3)
+Poll_model_16_S3 <- lme(log(Seed_mass) ~ MeanFlower.cen * MeanVisit, random =  ~ 1|siteID, data = dat16_S3)
 summary(Poll_model_16_S3)
 
 dat16_S4 <- dat16_clean |> 
   filter(Stage2 == 4)
 
-Poll_model_16_S4 <- lme(log(Seed_mass) ~ MeanFlower.cen + MeanVisit, random =  ~ 1|siteID, data = dat16_S4)
+Poll_model_16_S4 <- lme(log(Seed_mass) ~ MeanFlower.cen * MeanVisit, random =  ~ 1|siteID, data = dat16_S4)
 summary(Poll_model_16_S4)
 
 #2017 seperate per stage and year
 dat17_S1 <- dat17 |> 
   filter(Stage2 == 1)
 
-Poll_model_17_S1 <- lme(log(Seed_mass) ~ MeanFlower.cen + MeanVisit, random =  ~ 1|siteID, data = dat17_S1)
+Poll_model_17_S1 <- lme(log(Seed_mass) ~ MeanFlower.cen * MeanVisit, random =  ~ 1|siteID, data = dat17_S1)
 summary(Poll_model_17_S1)
 
 dat17_S2 <- dat17 |> 
   filter(Stage2 == 2)
 
-Poll_model_17_S2 <- lme(log(Seed_mass) ~ MeanFlower.cen + MeanVisit, random =  ~ 1|siteID, data = dat17_S2)
+Poll_model_17_S2 <- lme(log(Seed_mass) ~ MeanFlower.cen * MeanVisit, random =  ~ 1|siteID, data = dat17_S2)
 summary(Poll_model_17_S2)
 #mean flowers significant
 
 dat17_S3 <- dat17 |> 
   filter(Stage2 == 3)
 
-Poll_model_17_S3 <- lme(log(Seed_mass) ~ MeanFlower.cen + MeanVisit, random =  ~ 1|siteID, data = dat17_S3)
+Poll_model_17_S3 <- lme(log(Seed_mass) ~ MeanFlower.cen * MeanVisit, random =  ~ 1|siteID, data = dat17_S3)
 summary(Poll_model_17_S3)
 
 #plot
