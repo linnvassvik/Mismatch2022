@@ -294,12 +294,12 @@ TemperatureFinse_comb2 <- ggplot() +
   theme(legend.position = c(0.02, 0.9), legend.justification = c(0, 1),
         panel.background = element_blank(), text = element_text(size = 14),
         plot.title = element_text(hjust = 0, vjust = 1, margin = margin(t = 10, r = 0, b = 0, l = 0))) +
-  geom_rect(aes(xmin=195, xmax=219, ymin=1, ymax=1.2, fill = "1"), alpha=0.5) + 
-  geom_rect(aes(xmin=191, xmax=223, ymin=0.8, ymax=1, fill = "2a"), alpha=0.5) + #but two flowers were hand pollinated already 2nd of july, doy= 183
-  geom_rect(aes(xmin=201, xmax=228, ymin=0.6, ymax=0.8, fill = "2b"), alpha = 0.5) +
-  geom_rect(aes(xmin=196, xmax=228, ymin=0.4, ymax=0.6, fill = "3a"), alpha = 0.5) +
-  geom_rect(aes(xmin=204, xmax=232, ymin=0.2, ymax=0.4, fill = "3b"), alpha = 0.5) +
-  geom_rect(aes(xmin=228, xmax=247, ymin=0, ymax=0.2, fill = "4"), alpha = 0.5) +
+  geom_rect(aes(xmin=162, xmax=219, ymin=1, ymax=1.2, fill = "1"), alpha=0.5) + 
+  geom_rect(aes(xmin=169, xmax=223, ymin=0.8, ymax=1, fill = "2a"), alpha=0.5) + #but two flowers were hand pollinated already 2nd of july, doy= 183
+  geom_rect(aes(xmin=175, xmax=228, ymin=0.6, ymax=0.8, fill = "2b"), alpha = 0.5) +
+  geom_rect(aes(xmin=186, xmax=228, ymin=0.4, ymax=0.6, fill = "3a"), alpha = 0.5) +
+  geom_rect(aes(xmin=189, xmax=232, ymin=0.2, ymax=0.4, fill = "3b"), alpha = 0.5) +
+  geom_rect(aes(xmin=197, xmax=247, ymin=0, ymax=0.2, fill = "4"), alpha = 0.5) +
   geom_text(aes(x = 207, y = 1.1, label = "1: 2017"), color = "brown", size = 3) +
   geom_text(aes(x = 203, y = 0.9, label = "2: 2016"), color = "brown", size = 3) +
   geom_text(aes(x = 214.5, y = 0.7, label = "2: 2017"), color = "brown", size = 3) +
