@@ -17,10 +17,10 @@ dat17 <- dat |>
 
 #Run models without biomass
 
-sm_model_16 <- lme(log(Seed_mass) ~ Stage2 + MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|BlockID, data = dat16)
+sm_model_16 <- lme(log(Seed_mass) ~ Stage2 + MeanFlower.cen + CumTemp_after.cen + CumTemp_before + Treatment, random =  ~ 1|siteID, data = dat16)
 summary(sm_model_16)
 
-sm_model_17 <- lme(log(Seed_mass) ~ Stage2 + MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|BlcokID, data = dat17)
+sm_model_17 <- lme(log(Seed_mass) ~ Stage2 + MeanFlower.cen + CumTemp_after.cen + CumTemp_before + Treatment, random =  ~ 1|siteID, data = dat17)
 summary(sm_model_17)
 
 #When removing biomass 2016 ends up with stage as sifnificant (more than last time), and 2017 with flower abundance (more than before) and temp (same importance)
@@ -69,7 +69,7 @@ summary(sm_model_17_S3)
 ###############
 
 ### Seed:ovule ratio/seed potential
-sp_model <- glmer(Seed_potential ~ Stage + MeanFlower.cen + CumTemp_after.cen + Treatment + (1|siteID), family = binomial, data = dat16)
+sp_model <- glmer(Seed_number ~ Stage + MeanFlower.cen + CumTemp_after.cen + Treatment + offset(Ovule_number) + (1|siteID), family = poisson, data = dat16)
 summary(sp_model)
 
 
@@ -77,7 +77,7 @@ summary(sp_model)
 dat16_S2 <- dat16 |> 
   filter(Stage2 == 2)
 
-sp_model_S2 <- glmer(Seed_potential ~ MeanFlower.cen + CumTemp_before.cen + CumTemp_after.cen + Treatment + (1|siteID), family = binomial, data = dat16_S2)
+sp_model_S2 <- glmer(Seed_potential ~ MeanFlower.cen + CumTemp_before.cen + CumTemp_after.cen + Treatment + offset(log(Ovule_number)) + (1|siteID), family = binomial, data = dat16_S2)
 summary(sp_model_S2)
 
 
@@ -199,7 +199,7 @@ library(reshape2)
 library(ggcorrplot)
 
 # Create a subset of your data with the relevant variables
-subset_data <- dat[c("Biomass", "CumTemp_before.cen", "CumTemp_after.cen", "Stage2", "MeanFlower.cen", "MeanVisit")]
+subset_data <- dat2[c("Biomass", "CumTemp_before.cen", "CumTemp_after.cen", "Stage2", "MeanFlower.cen", "MeanVisit")]
 
 # Calculate the Pearson correlation matrix
 cor_matrix <- cor(subset_data, method = "pearson")
