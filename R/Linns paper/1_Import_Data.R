@@ -161,6 +161,7 @@ temp17 <- read_excel("Data_plant_pollinator_Finse_2016_2017/2017/weather_2017.xl
   select(date = `Tid(norsk normaltid)`, temperature = `Middeltemperatur (døgn)`) |> 
   mutate(date = dmy(date),
          temperature = as.numeric(temperature))
+#in 2017 5 dates had missing temeperature recordings from 19-23rd of may, data from nearest climate station, Midtstova 1160 masl, were then used
 
 Weather <- bind_rows(temp16, temp17) |> 
   filter(!is.na(date)) |> 
