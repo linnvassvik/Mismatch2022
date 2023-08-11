@@ -29,47 +29,50 @@ summary(sm_model_17)
 dat16_S2 <- dat16 |> 
   filter(Stage2 == 2)
 
-sm_model_16_S2 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat16_S2)
+sm_model_16_S2 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_after.cen + CumTemp_before + Treatment, random =  ~ 1|siteID, data = dat16_S2)
 summary(sm_model_16_S2)
 
 dat16_S3 <- dat16 |> 
   filter(Stage2 == 3)
 
-sm_model_16_S3 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat16_S3)
+sm_model_16_S3 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_after.cen + CumTemp_before + Treatment, random =  ~ 1|siteID, data = dat16_S3)
 summary(sm_model_16_S3)
 
 dat16_S4 <- dat16 |> 
   filter(Stage2 == 4)
 
-sm_model_16_S4 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat16_S4)
+sm_model_16_S4 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_after.cen + CumTemp_before + Treatment, random =  ~ 1|siteID, data = dat16_S4)
 summary(sm_model_16_S4)
 
 #2017 seperate per stage and year
 dat17_S1 <- dat17 |> 
   filter(Stage2 == 1)
 
-sm_model_17_S1 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat17_S1)
+sm_model_17_S1 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_after.cen + CumTemp_before + Treatment, random =  ~ 1|siteID, data = dat17_S1)
 summary(sm_model_17_S1)
 
 dat17_S2 <- dat17 |> 
   filter(Stage2 == 2)
 
-sm_model_17_S2 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat17_S2)
+sm_model_17_S2 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_after.cen + CumTemp_before + Treatment, random =  ~ 1|siteID, data = dat17_S2)
 summary(sm_model_17_S2)
 
 dat17_S3 <- dat17 |> 
   filter(Stage2 == 3)
 
-sm_model_17_S3 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat17_S3)
+sm_model_17_S3 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_after.cen + CumTemp_before + Treatment, random =  ~ 1|siteID, data = dat17_S3)
 summary(sm_model_17_S3)
 
 
-
 ###############
 ###############
+dat16 <- dat16 %>% 
+  group_by(BlockID, Year, Plant) %>% 
+  mutate(Number_seedovule = (Seed_number + Ovule_number)) %>% 
+  ungroup()
 
 ### Seed:ovule ratio/seed potential
-sp_model <- glmer(Seed_number ~ Stage + MeanFlower.cen + CumTemp_after.cen + Treatment + offset(Ovule_number) + (1|siteID), family = poisson, data = dat16)
+sp_model <- glmer(Seed_number ~ Stage + MeanFlower.cen + CumTemp_after.cen + Treatment + offset(Number_seedovule) + (1|siteID), family = poisson, data = dat16)
 summary(sp_model)
 
 
@@ -199,7 +202,7 @@ library(reshape2)
 library(ggcorrplot)
 
 # Create a subset of your data with the relevant variables
-subset_data <- dat2[c("Biomass", "CumTemp_before.cen", "CumTemp_after.cen", "Stage2", "MeanFlower.cen", "MeanVisit")]
+subset_data <- dat[c("Biomass", "CumTemp_before.cen", "CumTemp_after.cen", "Stage2", "MeanFlower.cen", "MeanVisit")]
 
 # Calculate the Pearson correlation matrix
 cor_matrix <- cor(subset_data, method = "pearson")
