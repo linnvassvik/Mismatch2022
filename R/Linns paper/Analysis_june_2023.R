@@ -114,11 +114,11 @@ dat16 %>%
 #Seed mass and pollination
 dat16_clean <- dat16[!is.infinite(dat16$MeanVisit), ]
 
-Poll_model_16 <- lme(log(Seed_mass) ~ MeanFlower.cen * MeanVisit, random =  ~ 1|siteID, data = dat16_clean)
+Poll_model_16 <- lme(log(Seed_mass) ~ MeanFlower.cen * MeanVisit * Treatment, random =  ~ 1|siteID, data = dat16_clean)
 summary(Poll_model_16)
 
 
-Poll_model_17 <- lme(log(Seed_mass) ~ MeanFlower.cen * MeanVisit, random =  ~ 1|siteID, data = dat17)
+Poll_model_17 <- lme(log(Seed_mass) ~ MeanFlower.cen * MeanVisit * Treatment, random =  ~ 1|siteID, data = dat17)
 summary(Poll_model_17)
 
 

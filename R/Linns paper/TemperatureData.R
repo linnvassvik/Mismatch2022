@@ -306,12 +306,12 @@ TemperatureFinse_comb2 <- ggplot() +
   geom_text(aes(x = 214, y = 0.5, label = "3: 2016"), color = "brown", size = 3) +
   geom_text(aes(x = 218, y = 0.3, label = "3: 2017"), color = "brown", size = 3) +
   geom_text(aes(x = 237.5, y = 0.1, label = "4: 2016"), color = "brown", size = 3) +
-  geom_point(aes(x = 145, y = 1.1, label = "none"), color = "brown", fill = "#FFFF00", shape = 21, size = 2, stroke = 0.2) +
-  geom_point(aes(x = 169, y = 0.9, label = "none"), color = "brown", fill = "#FFCC33", shape = 24, size = 2, stroke = 0.2) +
-  geom_point(aes(x = 163, y = 0.7, label = "none"), color = "brown", fill = "#FFCC99", shape = 21, size = 2, stroke = 0.2) +
-  geom_point(aes(x = 186, y = 0.5, label = "none"), color = "brown", fill = "#FF9966", shape = 24, size = 2, stroke = 0.2) +
-  geom_point(aes(x = 170, y = 0.3, label = "none"), color = "brown", fill = "#FF6600", shape = 21, size = 2, stroke = 0.2) +
-  geom_point(aes(x = 197, y = 0.1, label = "none"), color = "brown", fill = "#CC3300", shape = 24, size = 2, stroke = 0.2) +
+  #geom_point(aes(x = 145, y = 1.1, label = "none"), color = "brown", fill = "#FFFF00", shape = 21, size = 2, stroke = 0.2) +
+  #geom_point(aes(x = 169, y = 0.9, label = "none"), color = "brown", fill = "#FFCC33", shape = 24, size = 2, stroke = 0.2) +
+  #geom_point(aes(x = 163, y = 0.7, label = "none"), color = "brown", fill = "#FFCC99", shape = 21, size = 2, stroke = 0.2) +
+  #geom_point(aes(x = 186, y = 0.5, label = "none"), color = "brown", fill = "#FF9966", shape = 24, size = 2, stroke = 0.2) +
+  #geom_point(aes(x = 170, y = 0.3, label = "none"), color = "brown", fill = "#FF6600", shape = 21, size = 2, stroke = 0.2) +
+  #geom_point(aes(x = 197, y = 0.1, label = "none"), color = "brown", fill = "#CC3300", shape = 24, size = 2, stroke = 0.2) +
   geom_point(aes(x = 197, y = 1.1, label = "none"), shape = 8, size = 2) +
   geom_point(aes(x = 197, y = 0.9, label = "none"), shape = 8, size = 2) +
   geom_point(aes(x = 206, y = 0.7, label = "none"), shape = 8, size = 2) +

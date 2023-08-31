@@ -406,7 +406,10 @@ dat <- WeatherAndBiomass |>
   # make sure that Control Treatment comes first
   mutate(Treatment = factor(Treatment, levels = c("Control", "Pollinated")))
 
-
+dat2 <- dat %>% 
+  group_by(BlockID, Year, Plant) %>% 
+  mutate(Temp_total.cen = (CumTemp_before.cen + CumTemp_after.cen)) %>% 
+  ungroup() 
 
 # old code
 # WeatherAndBiomass <- Biomass %>%
