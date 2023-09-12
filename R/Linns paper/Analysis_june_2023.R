@@ -238,9 +238,20 @@ ggplot(dat3, aes(y = Temp_total, x = Biomass)) +
 #
 
 
+#number of flowers
+phenology %>%
+  group_by(stage, year) %>%
+  summarize(total_flowers = sum(flower.sum))
 
+phenology %>%
+  group_by(year) %>%
+  summarize(total_flowers = sum(flower.sum))
 
+# Independent samples t-test
+phenoDiff <- t.test(flower.sum ~ year, data = phenology)
 
+# Print the result
+print(phenoDiff)
 
 
 ######### Calculate average biomass
@@ -277,6 +288,13 @@ colnames(resultSeed) <- c("Year", "Average_Seedmass", "Standard_Deviation")
 # Print the results
 print(resultSeed)
 
+
+# Independent samples t-test
+SeedmassDiff <- t.test(Seed_mass ~ Year, data = dat)
+
+# Print the result
+print(SeedmassDiff)
+
 ####### TEST SIGNIFICANCE
 
 # Select the seedmass for the two years you want to compare
@@ -289,7 +307,12 @@ t_test_result <- t.test(year1_seedmass, year2_seedmass)
 # Print the t-test result
 print(t_test_result)
 
+#Difference in temperature
+# Independent samples t-test
+TempDiff <- t.test(Temp_after ~ Year, data = dat3)
 
+# Print the result
+print(TempDiff)
 
 # Select the temperature for the two years you want to compare
 #year1_temp <- dat$CumTemp_after.cen[dat$Year == '2016']
