@@ -6,6 +6,7 @@ library(MuMIn)
 library(broom.mixed)
 library(performance)
 library(patchwork)
+library(readxl)
 
 ### Seed mass 2016
 dat16 <- dat |> 
@@ -204,7 +205,7 @@ library(reshape2)
 library(ggcorrplot)
 
 # Create a subset of your data with the relevant variables
-subset_data <- dat2[c("Biomass", "CumTemp_before.cen", "Temp_total.cen", "CumTemp_after.cen")]
+subset_data <- dat3[c("Biomass", "Temp_before", "Temp_total", "Temp_after")]
 
 # Calculate the Pearson correlation matrix
 cor_matrix <- cor(subset_data, method = "pearson")
@@ -229,12 +230,12 @@ ggplot(cor_matrix_long, aes(x = Var1, y = Var2, fill = value)) +
 #correlation between temperature before and after first HP, but very weak correlation on the rest?
 
 
-ggplot (dat2, aes(y = CumTemp_after, x = Biomass)) +
+ggplot(dat3, aes(y = Temp_total, x = Biomass)) +
   geom_point() +
   geom_smooth(method = lm)
 
 
-
+#
 
 
 
@@ -299,3 +300,31 @@ print(t_test_result)
 
 # Print the t-test result
 #print(t_test_result_temp)
+
+
+
+
+
+
+
+
+###### Find missing temperature at Finse in 2017 by predicting it from temperature from Midtstova
+TempFinseMidtstova <- read_excel("Data_plant_pollinator_Finse_2016_2017/TempFinseMidtstova.xlsx") %>% 
+  select(name = Navn, date = Tid, temperature = Temp) %>% 
+  mutate(date = dmy(date), temperature = as.numeric(temperature))
+
+FinseMidt <- TempFinseMidtstova %>% 
+  group_by(date) %>% 
+  pivot_wider(names_from = name, values_from = temperature) %>% 
+  ungroup()
+
+tPred <- lm(Finsevatn ~ Midtstova, data = FinseMidt)
+summary(tPred)
+
+#a = 1.078, R^2 = 0.9392, intercept = -0.79
+
+#TFinse = A * tMId + Intercept
+
+FinseMidtNew <- FinseMidt %>% 
+  group_by(date) %>% 
+  mutate(FinsevatnNy = (1.07811 * Midtstova + (-0.79)))

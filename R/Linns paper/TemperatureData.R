@@ -92,10 +92,6 @@ Temperature_Finse2 <- Temperature_Finse %>%
   filter(MASL == 1489 | MASL == 1411) %>% 
   filter(doy > 195)
 
-ggplot(pivoted_temp, aes(x = doy, y = Temp_Diff)) +
-  geom_smooth(method = lm)
-
-
 avg_temp <- Temperature_Finse2 %>%
   group_by(Stage, doy) %>%
   summarise(avg_temperature = mean(Temperature_iButton))
@@ -113,6 +109,9 @@ print(pivoted_temp)
 avg_temp_diff <- mean(pivoted_temp$Temp_Diff)
 
 #total average difference of 0.9 degrees between 1411 and 1489 MASL
+
+ggplot(pivoted_temp, aes(x = doy, y = Temp_Diff)) +
+  geom_smooth(method = lm)
 
 ############################################
 ###########################################

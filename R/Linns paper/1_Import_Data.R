@@ -161,7 +161,7 @@ temp17 <- read_excel("Data_plant_pollinator_Finse_2016_2017/2017/weather_2017.xl
   select(date = `Tid(norsk normaltid)`, temperature = `Middeltemperatur (døgn)`) |> 
   mutate(date = dmy(date),
          temperature = as.numeric(temperature))
-#in 2017 5 dates had missing temeperature recordings from 19-23rd of may, data from nearest climate station, Midtstova 1160 masl, were then used
+#in 2017 5 dates had missing temeperature recordings from 19-23rd of may, data from nearest climate station, Midtstova 1160 masl, were then usedused to predict these temperatures (a*TMidtstova * intercept. Result = a = 1.078, R^2 = 0.9392, intercept = -0.79)
 
 Weather <- bind_rows(temp16, temp17) |> 
   filter(!is.na(date)) |> 
@@ -385,6 +385,31 @@ WeatherAndBiomass <- WeatherAndBiomass1 %>%
   left_join(WeatherAndBiomass2) %>%  
   group_by(Year, BlockID, Plant) %>% 
   select(Year, BlockID, Plant, CumTemp_before, everything())
+
+######
+#just temperature, no cumulative temp
+WeatherAndBiomass3 <- bind_rows(meta16_a, meta17_a) |> 
+  group_by(Year, BlockID, Plant) %>%
+  summarise(Temp_after = tempAboveZeroAdi, na.rm = TRUE) |> 
+  left_join(Biomass, by = c("Year", "BlockID", "Plant"))
+
+WeatherAndBiomass4 <- bind_rows(meta16_b, meta17_b) |> 
+  group_by(Year, BlockID, Plant) %>%
+  summarise(Temp_before = tempAboveZeroAdi, na.rm = TRUE) |> 
+  left_join(Biomass, by = c("Year", "BlockID", "Plant")) %>% 
+  select(-c(Biomass:MeanVisit))
+
+WeatherAndBiomass5 <- WeatherAndBiomass3 %>%  
+  left_join(WeatherAndBiomass4) %>%  
+  group_by(Year, BlockID, Plant) %>% 
+  select(Year, BlockID, Plant, everything())
+
+dat3 <- WeatherAndBiomass5 %>% 
+  group_by(BlockID, Year, Plant) %>% 
+  mutate(Temp_total = ((Temp_before + Temp_after)/2)) %>% 
+  ungroup() 
+
+#########
 
 #rescale
 d1 <- as_tibble(x = scale(WeatherAndBiomass$CumTemp_before))
