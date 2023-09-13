@@ -197,15 +197,18 @@ sp_model_S4_Poll <- glmer(Seed_number ~ MeanFlower.cen + MeanVisit + Treatment +
 summary(sp_model_S4_Poll)
 
 
-####################################
+##########################################################################
 ### Correlation between tested factors
 
 
 library(reshape2)
 library(ggcorrplot)
 
+dat4 <- dat %>% 
+  filter(Year != '2017')
+
 # Create a subset of your data with the relevant variables
-subset_data <- dat3[c("Biomass", "Temp_before", "Temp_total", "Temp_after")]
+subset_data <- dat4[c("Biomass", "CumTemp_before.cen", "CumTemp_after.cen")]
 
 # Calculate the Pearson correlation matrix
 cor_matrix <- cor(subset_data, method = "pearson")
@@ -227,15 +230,20 @@ ggplot(cor_matrix_long, aes(x = Var1, y = Var2, fill = value)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   coord_fixed()
 
-#correlation between temperature before and after first HP, but very weak correlation on the rest?
+subset_data %>% 
+  ggplot(aes(y = Biomass, x = CumTemp_after.cen)) +
+  geom_point() +
+  geom_smooth(method = lm)
 
+
+#correlation between temperature before and after first HP, but very weak correlation on the rest?
 
 ggplot(dat3, aes(y = Temp_total, x = Biomass)) +
   geom_point() +
   geom_smooth(method = lm)
 
 
-#
+############################################################################################################
 
 
 #number of flowers
