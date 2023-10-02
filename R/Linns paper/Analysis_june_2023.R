@@ -19,12 +19,15 @@ dat17 <- dat |>
 #Run models without biomass
 sm_model_both <- lme(log(Seed_mass) ~ Stage2 + MeanFlower.cen + CumTemp_after.cen + Treatment + Year, random =  ~ 1|siteID, data = dat)
 summary(sm_model_both)
+anova(sm_model_both)
 
 sm_model_16 <- lme(log(Seed_mass) ~ Stage2 + MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat16)
 summary(sm_model_16)
+anova(sm_model_16)
 
 sm_model_17 <- lme(log(Seed_mass) ~ Stage2 + MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat17)
 summary(sm_model_17)
+anova(sm_model_17)
 
 #When removing biomass 2016 ends up with stage as sifnificant (more than last time), and 2017 with flower abundance (more than before) and temp (same importance)
 
@@ -34,18 +37,21 @@ dat16_S2 <- dat16 |>
 
 sm_model_16_S2 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat16_S2)
 summary(sm_model_16_S2)
+anova(sm_model_16_S2)
 
 dat16_S3 <- dat16 |> 
   filter(Stage2 == 3)
 
 sm_model_16_S3 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat16_S3)
 summary(sm_model_16_S3)
+anova(sm_model_16_S3)
 
 dat16_S4 <- dat16 |> 
   filter(Stage2 == 4)
 
 sm_model_16_S4 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat16_S4)
 summary(sm_model_16_S4)
+anova(sm_model_16_S4)
 
 #2017 seperate per stage and year
 dat17_S1 <- dat17 |> 
@@ -53,18 +59,21 @@ dat17_S1 <- dat17 |>
 
 sm_model_17_S1 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat17_S1)
 summary(sm_model_17_S1)
+anova(sm_model_17_S1)
 
 dat17_S2 <- dat17 |> 
   filter(Stage2 == 2)
 
 sm_model_17_S2 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat17_S2)
 summary(sm_model_17_S2)
+anova(sm_model_17_S2)
 
 dat17_S3 <- dat17 |> 
   filter(Stage2 == 3)
 
 sm_model_17_S3 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat17_S3)
 summary(sm_model_17_S3)
+anova(sm_model_17_S3)
 
 
 ###############
@@ -77,6 +86,7 @@ dat16 <- dat16 %>%
 ### Seed:ovule ratio/seed potential
 sp_model <- glmer(Seed_number ~ Stage2 + MeanFlower.cen + CumTemp_after.cen + Treatment + offset(log(Number_seedovule)) + (1|siteID), family = poisson, data = dat16)
 summary(sp_model)
+anova(sp_model)
 
 
 #2016 seperate per stage
