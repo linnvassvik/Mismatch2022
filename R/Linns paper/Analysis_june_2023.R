@@ -23,7 +23,7 @@ anova(sm_model_both)
 
 sm_model_16 <- lme(log(Seed_mass) ~ Stage2 + MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat16)
 summary(sm_model_16)
-anova(sm_model_16)
+car::Anova(sm_model_16)
 
 sm_model_17 <- lme(log(Seed_mass) ~ Stage2 + MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat17)
 summary(sm_model_17)

@@ -15,13 +15,13 @@ dat |>
 
 # temp vs stage
 dat |> 
-  ggplot(aes(x = factor(Stage2), y = CumTemp, fill = factor(Year))) +
+  ggplot(aes(x = factor(Stage2), y = CumTemp_after, fill = factor(Year))) +
   geom_boxplot()
 
 ### Seed mass 2016
 dat16 <- dat |> 
   filter(Year == 2016)
-sm_model_16_lrt <- lme(log(Seed_mass) ~ Biomass + Stage2 + MeanFlower.cen + CumTemp.cen + Treatment, random =  ~ 1|siteID, data = dat16, method = "ML")
+sm_model_16_lrt <- lme(log(Seed_mass) ~ Biomass + Stage2 + MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat16, method = "ML")
 
 # likelihood ratio test
 drop1(sm_model_16_lrt)
@@ -56,7 +56,7 @@ sm_model_17_lrt <- lme(log(Seed_mass) ~ Biomass + Stage2 + MeanFlower.cen + CumT
 # likelihood ratio test
 drop1(sm_model_17_lrt)
 
-sm_model_17 <- lme(log(Seed_mass) ~ Biomass + Stage2 + MeanFlower.cen + CumTemp.cen + Treatment, random = ~ 1|siteID, data = dat17)
+sm_model_17 <- lme(log(Seed_mass) ~ Stage2 + MeanFlower.cen + CumTemp.cen + Treatment, random = ~ 1|siteID, data = dat17)
 summary(sm_model_17)
 
 bind_rows("2016" = tidy(sm_model_16), 
