@@ -2,7 +2,6 @@ source("R/Linns paper/1_Import_Data.R")
 
 library(lme4)
 library(nlme)
-library(MuMIn)
 library(broom.mixed)
 library(performance)
 library(patchwork)
@@ -72,7 +71,7 @@ dat16 <- dat16 %>%
   mutate(Number_seedovule = (Seed_number + Ovule_number)) %>% 
   ungroup()
 
-### Seed:ovule ratio/seed potential
+### Snumber
 sp_model <- glmer(Seed_number ~ Stage2 + MeanFlower.cen + CumTemp_after.cen + Treatment + offset(log(Number_seedovule)) + (1|siteID), family = poisson, data = dat16)
 summary(sp_model)
 
@@ -98,62 +97,6 @@ dat16_S4 <- dat16 |>
 
 sp_model_S4 <- glmer(Seed_number ~ Stage2 + MeanFlower.cen + CumTemp_after.cen + Treatment + offset(log(Number_seedovule)) + (1|siteID), family = poisson, data = dat16_S4)
 summary(sp_model_S4)
-
-
-
-
-###########################
-#Look into variables concerning pollination
-
-#Seed mass and pollination
-dat16_clean <- dat16[!is.infinite(dat16$MeanVisit), ]
-
-Poll_model_16 <- lme(log(Seed_mass) ~ MeanFlower.cen * MeanVisit * Treatment, random =  ~ 1|siteID, data = dat16_clean)
-summary(Poll_model_16)
-
-
-Poll_model_17 <- lme(log(Seed_mass) ~ MeanFlower.cen * MeanVisit * Treatment, random =  ~ 1|siteID, data = dat17)
-summary(Poll_model_17)
-
-
-#2016 seperate per stage and year
-dat16_S2 <- dat16_clean |> 
-  filter(Stage2 == 2)
-
-Poll_model_16_S2 <- lme(log(Seed_mass) ~ MeanFlower.cen * MeanVisit, random =  ~ 1|siteID, data = dat16_S2)
-summary(Poll_model_16_S2)
-
-dat16_S3 <- dat16_clean |> 
-  filter(Stage2 == 3)
-
-Poll_model_16_S3 <- lme(log(Seed_mass) ~ MeanFlower.cen * MeanVisit, random =  ~ 1|siteID, data = dat16_S3)
-summary(Poll_model_16_S3)
-
-dat16_S4 <- dat16_clean |> 
-  filter(Stage2 == 4)
-
-Poll_model_16_S4 <- lme(log(Seed_mass) ~ MeanFlower.cen * MeanVisit, random =  ~ 1|siteID, data = dat16_S4)
-summary(Poll_model_16_S4)
-
-#2017 seperate per stage and year
-dat17_S1 <- dat17 |> 
-  filter(Stage2 == 1)
-
-Poll_model_17_S1 <- lme(log(Seed_mass) ~ MeanFlower.cen * MeanVisit, random =  ~ 1|siteID, data = dat17_S1)
-summary(Poll_model_17_S1)
-
-dat17_S2 <- dat17 |> 
-  filter(Stage2 == 2)
-
-Poll_model_17_S2 <- lme(log(Seed_mass) ~ MeanFlower.cen * MeanVisit, random =  ~ 1|siteID, data = dat17_S2)
-summary(Poll_model_17_S2)
-#mean flowers significant
-
-dat17_S3 <- dat17 |> 
-  filter(Stage2 == 3)
-
-Poll_model_17_S3 <- lme(log(Seed_mass) ~ MeanFlower.cen * MeanVisit, random =  ~ 1|siteID, data = dat17_S3)
-summary(Poll_model_17_S3)
 
 
 
@@ -267,7 +210,7 @@ average_seedmass <- aggregate(Seed_mass ~ Year, dat, FUN = mean)
 # Calculate the standard deviation of the biomass per year
 standard_deviation <- aggregate(Seed_mass ~ Year, dat, FUN = sd)
 
-# Merge the average biomass and standard deviation into a single data frame
+# Merge the average seedmass and standard deviation into a single data frame
 resultSeed <- merge(average_seedmass, standard_deviation, by = "Year")
 
 # Rename the columns
@@ -313,8 +256,35 @@ print(TempDiff)
 #print(t_test_result_temp)
 
 
+######## Number of seeds
+average_seednumber <- aggregate(Seed_number ~ Year, dat, FUN = mean)
+standard_deviation_Seednumber <- aggregate(Seed_number ~ Year, dat, FUN = sd)
+resultSeedNumber <- merge(average_seednumber, standard_deviation_Seednumber, by = "Year" )
+colnames(resultSeedNumber) <- c("Year", "Average_Seednumber", "Standard_Deviation_SeedNumber")
+
+# Print the results
+print(resultSeedNumber)
+
+average_ovulenumber <- aggregate(Ovule_number ~ Year, dat, FUN = mean)
+standard_deviation_ovulenumber <- aggregate(Ovule_number ~ Year, dat, FUN = sd)
+resultOvuleNumber <- merge(average_ovulenumber, standard_deviation_ovulenumber, by = "Year")
+colnames(resultOvuleNumber) <- c("Year", "Average_Ovulenumber", "Standard_Deviation_OvuleNumber")
+
+# Print the results
+print(resultOvuleNumber)
 
 
+average_SeedPotential <- aggregate(Seed_potential ~ Treatment, dat, FUN = mean)
+standard_deviation_SeedPotential <- aggregate(Seed_potential ~ Treatment, dat, FUN = sd)
+resultSeedPotential <- merge(average_SeedPotential, standard_deviation_SeedPotential, by = "Treatment")
+colnames(resultSeedPotential) <- c("Treatment", "Average_SeedPotential", "Standard_Deviation_SeedPotential")
+
+# Print the results
+print(resultSeedPotential)
+
+SeedPotentialDiff <- t.test(Seed_potential ~ Treatment, data = dat)
+# Print the result
+print(SeedPotentialDiff)
 
 ######### REMOVE??? #########
 

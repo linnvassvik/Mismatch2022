@@ -178,7 +178,7 @@ Temperature_2016_Site <- left_join(Temperature_2016, Stages2016, by = "Date")
 
 
 Temperature_2016_Site %>% 
-  filter(Date >= as.Date("2017-06-06")) %>% 
+  filter(Date >= as.Date("2016-06-06")) %>% 
   mutate(doy = yday(Date))
 
 Temp_2016_ALR <- Temperature_2016_Site %>% 
