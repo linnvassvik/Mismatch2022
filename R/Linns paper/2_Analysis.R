@@ -17,17 +17,12 @@ dat17 <- dat |>
   filter(Year == 2017)
 
 #Run models without biomass
-sm_model_both <- lme(log(Seed_mass) ~ Stage2 + MeanFlower.cen + CumTemp_after.cen + Treatment + Year, random =  ~ 1|siteID, data = dat)
-summary(sm_model_both)
-anova(sm_model_both)
-
 sm_model_16 <- lme(log(Seed_mass) ~ Stage2 + MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat16)
 summary(sm_model_16)
-car::Anova(sm_model_16)
 
 sm_model_17 <- lme(log(Seed_mass) ~ Stage2 + MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat17)
 summary(sm_model_17)
-anova(sm_model_17)
+
 
 #When removing biomass 2016 ends up with stage as sifnificant (more than last time), and 2017 with flower abundance (more than before) and temp (same importance)
 
@@ -37,21 +32,18 @@ dat16_S2 <- dat16 |>
 
 sm_model_16_S2 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat16_S2)
 summary(sm_model_16_S2)
-anova(sm_model_16_S2)
 
 dat16_S3 <- dat16 |> 
   filter(Stage2 == 3)
 
 sm_model_16_S3 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat16_S3)
 summary(sm_model_16_S3)
-anova(sm_model_16_S3)
 
 dat16_S4 <- dat16 |> 
   filter(Stage2 == 4)
 
 sm_model_16_S4 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat16_S4)
 summary(sm_model_16_S4)
-anova(sm_model_16_S4)
 
 #2017 seperate per stage and year
 dat17_S1 <- dat17 |> 
@@ -59,21 +51,18 @@ dat17_S1 <- dat17 |>
 
 sm_model_17_S1 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat17_S1)
 summary(sm_model_17_S1)
-anova(sm_model_17_S1)
 
 dat17_S2 <- dat17 |> 
   filter(Stage2 == 2)
 
 sm_model_17_S2 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat17_S2)
 summary(sm_model_17_S2)
-anova(sm_model_17_S2)
 
 dat17_S3 <- dat17 |> 
   filter(Stage2 == 3)
 
 sm_model_17_S3 <- lme(log(Seed_mass) ~ MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat17_S3)
 summary(sm_model_17_S3)
-anova(sm_model_17_S3)
 
 
 ###############
@@ -86,7 +75,7 @@ dat16 <- dat16 %>%
 ### Seed:ovule ratio/seed potential
 sp_model <- glmer(Seed_number ~ Stage2 + MeanFlower.cen + CumTemp_after.cen + Treatment + offset(log(Number_seedovule)) + (1|siteID), family = poisson, data = dat16)
 summary(sp_model)
-anova(sp_model)
+
 
 
 #2016 seperate per stage
@@ -110,12 +99,6 @@ dat16_S4 <- dat16 |>
 sp_model_S4 <- glmer(Seed_number ~ Stage2 + MeanFlower.cen + CumTemp_after.cen + Treatment + offset(log(Number_seedovule)) + (1|siteID), family = poisson, data = dat16_S4)
 summary(sp_model_S4)
 
-
-#plot
-dat16 %>% 
-  ggplot(aes(y = Seed_number, x = MeanFlowers)) +
-  geom_smooth() +
-  facet_wrap(~Stage2)
 
 
 
@@ -172,39 +155,6 @@ dat17_S3 <- dat17 |>
 Poll_model_17_S3 <- lme(log(Seed_mass) ~ MeanFlower.cen * MeanVisit, random =  ~ 1|siteID, data = dat17_S3)
 summary(Poll_model_17_S3)
 
-#plot
-dat %>% 
-  ggplot(aes(y = MeanVisit, x = MeanFlowers, color =Stage)) +
-  geom_point() +
-  geom_smooth(method = lm, expand = TRUE) +
-  facet_wrap(~Year, scales ="free_x")
-
-
-### Seed:ovule ratio/seed potential
-sp_model_Poll <- glmer(Seed_number ~ MeanFlower.cen + MeanVisit + (1|siteID), offset = Ovule_number, family = poisson, data = dat16_clean)
-summary(sp_model_Poll)
-#Snowmeltstage and Hand pollinated treatment significant.
-
-#2016 seperate per stage
-dat16_S2 <- dat16_clean |> 
-  filter(Stage2 == 2)
-
-sp_model_S2_Poll <- glmer(Seed_number ~ MeanFlower.cen + MeanVisit + Treatment + (1|siteID), family = poisson, data = dat16_S2)
-summary(sp_model_S2_Poll)
-#Number of flowers (positive) and hand pollinated treatment (negative) significant
-
-dat16_S3 <- dat16_clean |> 
-  filter(Stage2 == 3)
-
-sp_model_S3_Poll <- glmer(Seed_number ~ MeanFlower.cen + MeanVisit + Treatment + (1|siteID), family = poisson, data = dat16_S3)
-summary(sp_model_S3_Poll)
-#Mean flowers significant
-
-dat16_S4 <- dat16_clean |> 
-  filter(Stage2 == 4)
-
-sp_model_S4_Poll <- glmer(Seed_number ~ MeanFlower.cen + MeanVisit + Treatment + (1|siteID), family = poisson, data = dat16_S4)
-summary(sp_model_S4_Poll)
 
 
 ##########################################################################
@@ -218,7 +168,7 @@ dat4 <- dat %>%
   filter(Year != '2017')
 
 # Create a subset of your data with the relevant variables
-subset_data <- dat4[c("Biomass", "CumTemp_before.cen", "CumTemp_after.cen")]
+subset_data <- dat[c("CumTemp_after.cen", "Stage2", "MeanFlower.cen")]
 
 # Calculate the Pearson correlation matrix
 cor_matrix <- cor(subset_data, method = "pearson")
@@ -246,17 +196,23 @@ subset_data %>%
   geom_smooth(method = lm)
 
 
-#correlation between temperature before and after first HP, but very weak correlation on the rest?
-
-ggplot(dat3, aes(y = Temp_total, x = Biomass)) +
-  geom_point() +
-  geom_smooth(method = lm)
 
 
 ############################################################################################################
 
+##seed mass
+dat %>%
+  group_by(Year, Stage) %>%
+  summarize(total_Seedmass = mean(Seed_mass))
 
-#number of flowers
+# Independent samples t-test
+SeedMassDiff <- t.test(Seed_mass ~ Year, data = dat)
+
+# Print the result
+print(SeedMassDiff)
+
+
+###number of flowers
 phenology %>%
   group_by(stage, year) %>%
   summarize(total_flowers = sum(flower.sum))
@@ -272,22 +228,36 @@ phenoDiff <- t.test(flower.sum ~ year, data = phenology)
 print(phenoDiff)
 
 
-######### Calculate average biomass
+###Length of stages
+dat_onlyHP <- dat %>% 
+  filter(Plant %in% c("HP1", "HP2"))
 
-# Calculate the average biomass per year
-average_biomass <- aggregate(Biomass ~ Year, dat, FUN = mean)
+dat_onlyHP <- dat_onlyHP %>% 
+  mutate(DaysDifference = Collected - Date1)
 
-# Calculate the standard deviation of the biomass per year
-standard_deviation <- aggregate(Biomass ~ Year, dat, FUN = sd)
+result_stagesYear <- dat_onlyHP %>% 
+  group_by(Year, Stage) %>% 
+  summarize(AverageDays = mean(DaysDifference, na.rm = TRUE))
 
-# Merge the average biomass and standard deviation into a single data frame
-result <- merge(average_biomass, standard_deviation, by = "Year")
+result_year <- dat_onlyHP %>% 
+  group_by(Year) %>% 
+  summarize(AverageDays = mean(DaysDifference, na.rm = TRUE))
 
-# Rename the columns
-colnames(result) <- c("Year", "Average_Biomass", "Standard_Deviation")
+result_Stages <- dat_onlyHP %>% 
+  group_by(Stage2) %>% 
+  summarize(AverageDays = mean(DaysDifference, na.rm = TRUE))
+
+# Assuming you have two groups, one for each year, in your dat_onlyHP dataframe
+group_2016 <- dat_onlyHP$DaysDifference[dat_onlyHP$Year == 2016]
+group_2017 <- dat_onlyHP$DaysDifference[dat_onlyHP$Year == 2017]
+
+# Perform a t-test
+t_test_result <- t.test(group_2016, group_2017)
 
 # Print the results
-print(result)
+t_test_result
+
+
 
 ######### Calculate average seedmass
 
@@ -325,7 +295,7 @@ t_test_result <- t.test(year1_seedmass, year2_seedmass)
 # Print the t-test result
 print(t_test_result)
 
-#Difference in temperature
+###Difference in temperature
 # Independent samples t-test
 TempDiff <- t.test(Temp_after ~ Year, data = dat3)
 
@@ -346,7 +316,7 @@ print(TempDiff)
 
 
 
-
+######### REMOVE??? #########
 
 
 ###### Find missing temperature at Finse in 2017 by predicting it from temperature from Midtstova
