@@ -86,6 +86,20 @@ ggplot(Temperature_Finse, aes(x = MASL)) +
 ############################################
 ###########################################
   
+Temperature_Finse %>% 
+    ggplot(aes(x = , y = MASL, ))
+  
+ggplot(Temperature_Finse, aes(y = MASL)) +
+  geom_smooth(aes(x = Temperature_iButton, color = "Temperature iButton")) +
+  geom_smooth(aes(x = Adiabatic_Temperature, color = "Temperature Climate Station")) +
+  #geom_jitter(aes(x = Temperature_iButton, color = "Temperature iButton"), alpha = 0.2) +
+  #geom_jitter(aes(x = Adiabatic_Temperature, color = "Temperature Climate Station"), alpha = 0.2) +
+  labs(x = "Average daily temperature (°C)", y="Meters above sea level", color = "") +
+  scale_color_manual(values = c("Temperature iButton" = "#FF6666", "Temperature Climate Station" = "#99CCCC")) +
+  theme(legend.position="bottom", panel.background = element_blank(), text = element_text(size = 8)) 
+  
+  
+  
 ### Calculate difference in temperature between highest and lowest site
 Temperature_Finse2 <- Temperature_Finse %>% 
   select(-Temperature_Station, -MASLCorr, -Adiabatic_Temperature) %>% 
