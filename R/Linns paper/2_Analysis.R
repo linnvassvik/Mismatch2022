@@ -1,4 +1,5 @@
 source("R/Linns paper/1_Import_Data.R")
+source("R/Linns paper/MyFunctions.R")
 
 library(lme4)
 library(nlme)
@@ -6,21 +7,379 @@ library(broom.mixed)
 library(performance)
 library(patchwork)
 library(readxl)
+library(ggplot2) #remove
+library(ggpubr)
 
 ### Seed mass 2016
-dat16 <- dat |> 
+dat16 <- dat_DOY |> 
   filter(Year == 2016)
 
 ### Seed mass 2017
-dat17 <- dat |> 
+dat17 <- dat_DOY |> 
   filter(Year == 2017)
 
-#Run models without biomass
-sm_model_16 <- lme(log(Seed_mass) ~ Stage2 + MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat16)
+
+#Seed mass
+#2016
+
+hist(dat16$PeakFlower_doy, breaks = 10, fill = "lightgray")
+qqnorm(dat16$PeakFlower_doy)
+qqline(dat16$PeakFlower_doy)
+
+
+#What determines when plants flower (reaches peak flowering, number of flowers at peak or doy?)
+
+sm_model_16 <- glmer(PeakFlower_doy ~ Snowmelt_doy.cen * CumTemp_before.cen + (1|siteID), family = poisson, data = dat16)
+
+
+sm_model_17 <- glmer(PeakFlower_doy ~ Snowmelt_doy.cen * CumTemp_before.cen + (1|siteID), family = poisson, data = dat17)
+
+#plot peak flower x snowmelt doy and mean(temp), endre temperatur til snowmelt->peakdoy
+
 summary(sm_model_16)
 
-sm_model_17 <- lme(log(Seed_mass) ~ Stage2 + MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat17)
-summary(sm_model_17)
+check_model(sm_model_17)
+
+#Snowmelt doy important for peak flowering doy
+
+
+#What determines plants seed production (temp vs snowmelt    and pollen limitation?)
+sm_model_16_2 <- lme(log(Seed_mass) ~ Snowmelt_doy.cen * Temp_total.cen, random =  ~ 1|siteID, data = dat16)
+
+sm_model_17_2 <- lme(log(Seed_mass) ~ Snowmelt_doy.cen * Temp_total.cen, random =  ~ 1|siteID, data = dat17)
+
+summary(sm_model_17_2)
+
+
+dat16 %>% 
+  ggplot(aes(x = Snowmelt_doy, y = log(Seed_mass))) +
+  geom_point() +
+  geom_line(data = Fitted16, aes(x = Snowmelt_doy, y = .fitted))
+
+
+#Doy on x
+Newdata16 <- expand.grid(Snowmelt_doy = c(160, 165, 170, 175, 180, 185, 190, 195, 200), Temp_total.cen = c(-2,2), Seed_mass = 0)
+
+Newdata16$pred <- predict(sm_model_16_2, Newdata16, level = 0)
+
+Designmat <- model.matrix(formula(sm_model_16_2)[-2], Newdata16)
+predvar <- diag(Designmat %*% vcov(sm_model_16_2) %*% t(Designmat)) 
+Newdata16$SE <- sqrt(predvar) 
+
+
+cmult <- 2
+temp_16_plot <- ggplot(dat16,aes(x= Snowmelt_doy , y = log(Seed_mass)))+ 
+  geom_point(alpha = 0.5) +
+  geom_line(Newdata16, mapping = aes(x = Snowmelt_doy, y = pred, color = as.factor(Temp_total.cen))) +
+  scale_color_manual(values = c("#6666FF", "#FC4E07"), name = "Temperature") +
+  geom_ribbon(Newdata16, mapping = aes(y=pred,ymin = pred-cmult*SE, ymax=pred+cmult*SE, fill = as.factor(Temp_total.cen)), alpha = 0.5) +
+  scale_fill_manual(values = c("#6666FF", "#FC4E07"), name = "Temperature") +
+  labs(x = "Snowmelt doy", y = "log(Seed mass in g)", title = "2016") +
+  theme_minimal()
+
+#Temp on x
+Newdata16b <- expand.grid(Snowmelt_doy = c(160, 195), Temp_total.cen = c(-2,-1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2), Seed_mass = 0)
+
+Newdata16b$pred <- predict(sm_model_16_2, Newdata16b, level = 0)
+
+Designmat_b <- model.matrix(formula(sm_model_16_2)[-2], Newdata16b)
+predvar_b <- diag(Designmat %*% vcov(sm_model_16_2) %*% t(Designmat)) 
+Newdata16b$SE <- sqrt(predvar_b) 
+
+cmult <- 2
+doy_16_plot <- ggplot(dat16,aes(x= Temp_total.cen , y = log(Seed_mass)))+ 
+  geom_point(alpha = 0.5) +
+  geom_line(Newdata16b, mapping = aes(x = Temp_total.cen, y = pred, color = as.factor(Snowmelt_doy))) +
+  scale_color_manual(values = c("#336633", "#E69F00"), name = "Doy") +
+  geom_ribbon(Newdata16b, mapping = aes(y=pred,ymin = pred-cmult*SE, ymax=pred+cmult*SE, fill = as.factor(Snowmelt_doy)), alpha = 0.5) +
+  scale_fill_manual(values = c("#336633", "#E69F00"), name = "Doy") +
+  labs(x = "Temperature", y = "log(Seed mass in g)", title = "2016") +
+  theme_minimal()
+
+#2017
+Newdata17 <- expand.grid(Snowmelt_doy = c(140, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190), Temp_total.cen = c(-2,2), Seed_mass = 0)
+
+Newdata17$pred <- predict(sm_model_17_2, Newdata17, level = 0)
+
+Designmat <- model.matrix(formula(sm_model_17_2)[-2], Newdata17)
+predvar2 <- diag(Designmat %*% vcov(sm_model_17_2) %*% t(Designmat)) 
+Newdata17$SE <- sqrt(predvar2) 
+
+temp_17_plot <- ggplot(dat17,aes(x= Snowmelt_doy , y = log(Seed_mass)))+ 
+  geom_point(alpha = 0.5) +
+  geom_line(Newdata17, mapping = aes(x = Snowmelt_doy, y = pred, color = as.factor(Temp_total.cen))) +
+  scale_color_manual(values = c("#6666FF", "#FC4E07"), name = "Temperature") +
+  geom_ribbon(Newdata17, mapping = aes(y=pred,ymin = pred-cmult*SE, ymax=pred+cmult*SE, fill = as.factor(Temp_total.cen)), alpha = 0.5) +
+  scale_fill_manual(values = c("#6666FF", "#FC4E07"), name = "Temperature") +
+  labs(x = "Snowmelt doy", y = "", title = "2017") +
+  theme_minimal()
+
+#Temp on x
+Newdata17_temp <- expand.grid(Snowmelt_doy = c(140, 180), Temp_total.cen = c(-2,-1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2), Seed_mass = 0)
+
+Newdata17_temp$pred <- predict(sm_model_17_2, Newdata17_temp, level = 0)
+
+Designmat <- model.matrix(formula(sm_model_17_2)[-2], Newdata17_temp)
+predvar_temp <- diag(Designmat %*% vcov(sm_model_17_2) %*% t(Designmat)) 
+Newdata17_temp$SE <- sqrt(predvar_temp) 
+
+doy_17_plot <- ggplot(dat17,aes(x= Temp_total.cen , y = log(Seed_mass)))+ 
+  geom_point(alpha = 0.5) +
+  geom_line(Newdata17_temp, mapping = aes(x = Temp_total.cen, y = pred, color = as.factor(Snowmelt_doy))) +
+  scale_color_manual(values = c("#336633", "#E69F00"), name = "doy") +
+  geom_ribbon(Newdata17_temp, mapping = aes(y=pred,ymin = pred-cmult*SE, ymax=pred+cmult*SE, fill = as.factor(Snowmelt_doy)), alpha = 0.5) +
+  scale_fill_manual(values = c("#336633", "#E69F00"), name = "doy") +
+  labs(x = "Temperature", y = "", title = "2017") +
+  theme_minimal()
+
+summary(sm_model_16_2)
+
+Temp_snowmelt <- ggarrange(temp_16_plot, temp_17_plot, common.legend = TRUE) 
+ggsave(Temp_snowmelt, filename = "Figures/Temp_snowmelt.jpeg", height = 6, width = 8)
+
+Temp_snowmelt_2 <- ggarrange(doy_16_plot, doy_17_plot, common.legend = TRUE) 
+ggsave(Temp_snowmelt_2, filename = "Figures/Temp_snowmelt_2.jpeg", height = 6, width = 8)
+
+
+
+
+
+#Which biotic factors affect reproductive output, and how do they change along the snowmelt gradient
+sm_model_16_10 <- lme(log(Seed_mass) ~ Snowmelt_doy.cen * Temp_total.cen * Treatment, random =  ~ 1|siteID, data = dat16)
+sm_model_16_11 <- lme(log(Seed_mass) ~ Snowmelt_doy.cen * Temp_total.cen * MeanFlower.cen, random =  ~ 1|siteID, data = dat16)
+dat16a <- na.omit(dat16)
+sm_model_16_12 <- lme(log(Seed_mass) ~ Snowmelt_doy.cen * Temp_total.cen * MeanVisit.cen, random =  ~ 1|siteID, data = dat16a) #centrere mean visit som meanflower
+#Visitation rate
+
+summary(sm_model_17_10)
+
+sm_model_17_10 <- lme(log(Seed_mass) ~ Snowmelt_doy.cen * Temp_total.cen * Treatment, random =  ~ 1|siteID, data = dat17)
+sm_model_17_11 <- lme(log(Seed_mass) ~ Snowmelt_doy.cen * Temp_total.cen * MeanFlower.cen, random =  ~ 1|siteID, data = dat17)
+sm_model_17_12 <- lme(log(Seed_mass) ~ Snowmelt_doy.cen * Temp_total.cen * MeanVisit.cen, random =  ~ 1|siteID, data = dat17)
+sm_model_17_13 <- lme(log(Seed_mass) ~ Snowmelt_doy.cen * Temp_total.cen * MeanFlower.cen * MeanVisit.cen, random =  ~ 1|siteID, data = dat17)
+
+dat17 %>% 
+  ggplot(aes(x = MeanFlower.cen, y = MeanVisit.cen)) +
+  geom_point() +
+  geom_smooth()
+
+summary(sm_model_17_13)
+
+#VIsit and Flower
+Newdata17_VisitFlower <- expand.grid(Snowmelt_doy.cen = mean(dat17$Snowmelt_doy.cen), Temp_total.cen = mean(dat17$Temp_total.cen), MeanVisit.cen = c(-1, -0.8, -0.6, -0.4, -0.2, 0, 0.2), Seed_mass = 0, MeanFlower.cen = c(-0.5, 2))
+
+VisitFlower17 <- make_prediction(Newdata17_VisitFlower, sm_model_17_13)
+
+VisitFlower17_plot <- make_prettyplot(dat = dat17, 
+                                 Newdata = VisitFlower17, 
+                                 xaxis = MeanVisit.cen, 
+                                 yaxis = log(Seed_mass), 
+                                 prediction = pred, 
+                                 ColorVariable = as.factor(MeanFlower.cen),
+                                 SE = SE) +
+  scale_color_manual(values = c("#FFCC99", "#336666"), name = "Visitation rate") +
+  scale_fill_manual(values = c("#FFCC99", "#336666"), name = "Visitation rate") +
+  labs(x = "Mean flower abundance", y = "log(Seed mass in g)", title = "")
+ggsave(VisitFlower17_plot, filename = "Figures/VisitFlower17_plot.jpeg", height = 6, width = 8)
+
+Newdata17_Flower <- expand.grid(Snowmelt_doy.doy = mean(dat17$Snowmelt_doy), Temp_total.cen = mean(dat17$Temp_total.cen), MeanFlower.cen = c(-0.5, 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4), Seed_mass = 0)
+
+Flower17 <- make_prediction(Newdata17_Flower, sm_model_17_11)
+
+Flower17_plot <- make_prettyplot(dat = dat17, 
+                                    Newdata = Flower17, 
+                                    xaxis = MeanFlower.cen, 
+                                    yaxis = log(Seed_mass), 
+                                    prediction = pred, 
+                                    ColorVariable = "#336666",
+                                    SE = SE) +
+  scale_color_manual(values = "#336666") +
+  scale_fill_manual(values = "#336666") +
+  labs(x = "Mean flower abundance", y = "", title = "Flower abundance") +
+  theme(legend.position = "none")
+
+FlowerVisitPlot <- ggarrange(Visit17_plot, Flower17_plot) 
+ggsave(FlowerVisitPlot, filename = "Figures/FlowerVisitPlot17.jpeg", height = 6, width = 8)
+
+Newdata17_Flower <- expand.grid(Snowmelt_doy = mean(dat17$Snowmelt_doy), Temp_total.cen = mean(dat17$Temp_total.cen), MeanFlower.cen = c(-0.5, 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4), Seed_mass = 0)
+
+#Visit x Flower
+Newdata17_FlowerVisit <- expand.grid(Snowmelt_doy.cen = mean(dat17$Snowmelt_doy), Temp_total.cen = mean(dat17$Temp_total.cen), MeanFlower.cen = c(-0.5, 0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4), MeanVisit.cen = c(-1, -0.8, -0.6, -0.4, -0.2, 0, 0.2))
+
+FlowerVisit17 <- make_prediction(Newdata17_FlowerVisit, sm_model_17_11)
+
+FlowerVisit17_plot <- make_prettyplot(dat = dat17, 
+                                 Newdata = Flower17, 
+                                 xaxis = MeanFlower.cen, 
+                                 yaxis = log(Seed_mass), 
+                                 prediction = pred, 
+                                 ColorVariable = "#336666",
+                                 SE = SE) +
+  scale_color_manual(values = "#336666") +
+  scale_fill_manual(values = "#336666") +
+  labs(x = "Mean flower abundance", y = "", title = "Flower abundance") +
+  theme(legend.position = "none")
+
+
+
+#Temp on x
+Newdata17_treatment <- expand.grid(Snowmelt_doy = mean(dat17$Snowmelt_doy), Temp_total.cen = c(-2,-1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2), Seed_mass = 0, Treatment = c("Control", "Pollinated"))
+
+Treatment17 <- make_prediction(Newdata17_treatment, sm_model_17_10)
+
+Treatment17_plot <- make_prettyplot(dat = dat17, 
+                Newdata = Treatment17, 
+                xaxis = Temp_total.cen, 
+                yaxis = log(Seed_mass), 
+                prediction = pred, 
+                ColorVariable = Treatment,
+                SE = SE) +
+  scale_color_manual(values = c("#FFCC99", "#336666"), name = "doy") +
+  scale_fill_manual(values = c("#FFCC99", "#336666"), name = "doy") +
+  labs(x = "Temperature", y = "", title = "2017")
+
+#2016
+Newdata16_treatment <- expand.grid(Snowmelt_doy = mean(dat16$Snowmelt_doy), Temp_total.cen = c(-2,-1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2), Seed_mass = 0, Treatment = c("Control", "Pollinated"))
+
+Treatment16 <- make_prediction(Newdata16_treatment, sm_model_16_10)
+
+Treatment16_plot <- make_prettyplot(dat = dat16, 
+                Newdata = Treatment16, 
+                xaxis = Temp_total.cen, 
+                yaxis = log(Seed_mass), 
+                prediction = pred, 
+                ColorVariable = Treatment,
+                SE = SE) +
+  scale_color_manual(values = c("#FFCC99", "#336666"), name = "doy") +
+  scale_fill_manual(values = c("#FFCC99", "#336666"), name = "doy") +
+  labs(x = "Temperature", y = "log(Seed mass in g)", title = "2016")
+
+TreatmentPlot <- ggarrange(Treatment16_plot, Treatment17_plot, common.legend = TRUE) 
+ggsave(TreatmentPlot, filename = "Figures/TreatmentPlot.jpeg", height = 6, width = 8)
+
+summary(sm_model_16_10)
+
+dat16 %>% 
+  group_by(Treatment) %>% 
+  summarise(mean(Seed_mass))
+
+dat17 %>% 
+  group_by(Treatment) %>% 
+  summarise(mean(Seed_mass))
+
+
+
+
+sm_model_16_6 <- lme(log(Seed_mass) ~ Snowmelt_doy * (MeanFlower.cen + Treatment), random =  ~ 1|siteID, data = dat16)
+sm_model_17_6 <- lme(log(Seed_mass) ~ Snowmelt_doy * (MeanFlower.cen + Treatment), random =  ~ 1|siteID, data = dat17)
+summary(sm_model_16_6)
+summary(sm_model_17_6)
+
+
+#Snowmelt alone is important for seed mass, with negative value? meaning that with early snowmelt you have lower seed mass? or with late snowmelt you have lower seed mass?
+#Temp * treatment is important for seed mass, meaning a higher temp results in a better effect from hand pollination which again affects seed mass?
+
+
+
+
+
+
+### Snumber
+dat16_2 <- dat16_2 %>% 
+  group_by(BlockID, Year, Plant) %>% 
+  mutate(Number_seedovule = (Seed_number + Ovule_number)) %>% 
+  ungroup()
+
+
+sp_model <- glmer(Seed_number ~ Snowmelt_doy.cen * Temp_total.cen + offset(log(Number_seedovule)) + (1|siteID), family = poisson, data = dat16_2)
+
+sp_model <- lme(Seed_number ~ Snowmelt_doy.cen * Temp_total.cen, random = ~ 1|siteID, data = dat16_2)
+
+glmer(cbind(Seed_number, Ovule_number) ~ Snowmelt_doy.cen * Temp_total.cen + (1|siteID), family = binomial(link = "logit"), data = dat16_2)
+
+
+summary(sp_model) 
+
+Newdata16_SN <- expand.grid(Snowmelt_doy.cen = c(-1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5), Temp_total.cen = c(-2,2), Seed_number = 0, Number_seedovule = mean(dat16_2$Number_seedovule), siteID = "E 01")
+
+Newdata = Newdata16_SN
+model = sp_model
+
+Newdata$pred <- predict(model,Newdata, re.form=NA)
+mm <- model.matrix(terms(model),Newdata)
+pvar1 <- diag(mm %*% tcrossprod(vcov(model),mm))
+tvar1 <- pvar1+VarCorr(model)$siteID[1] 
+cmult <- 1.96 ## make CI
+Newdata <- data.frame(
+  Newdata
+  , plo = Newdata$pred-cmult*sqrt(pvar1)
+  , phi = Newdata$pred+cmult*sqrt(pvar1)
+  , tlo = Newdata$pred-cmult*sqrt(tvar1)
+  , thi = Newdata$pred+cmult*sqrt(tvar1)
+)  
+
+
+
+TempSnow_16plot <- ggplot(dat16, aes(x = Snowmelt_doy.cen , y = Seed_number))+ 
+  geom_point(alpha = 0.5) +
+  geom_line(Newdata, mapping = aes(x = Snowmelt_doy.cen, y = pred, color = as.factor(Temp_total.cen))) +
+  geom_ribbon(Newdata, mapping = aes(y= pred,ymin = pred - plo, ymax = pred + phi, fill = as.factor(Temp_total.cen)), alpha = 0.5) +
+  theme_minimal()
+
+
+
+
+VisitFlower17_plot <- make_prettyplot(dat = dat16, 
+                                      Newdata = TempSnow16_SN, 
+                                      xaxis = Snowmelt_doy.cen, 
+                                      yaxis = log(Seed_mass), 
+                                      prediction = pred, 
+                                      ColorVariable = as.factor(Temp_total.cen),
+                                      SE = sqrt(pvar1)) +
+  scale_color_manual(values = c("#FFCC99", "#336666"), name = "Temperature") +
+  scale_fill_manual(values = c("#FFCC99", "#336666"), name = "Temperature") +
+  labs(x = "Snowmelt doy", y = "log(Seed mass in g)", title = "")
+
+ggsave(VisitFlower17_plot, filename = "Figures/VisitFlower17_plot.jpeg", height = 6, width = 8)
+
+#
+sp_model5 <- glmer(cbind(Seed_number, Ovule_number) ~ Snowmelt_doy * Temp_total.cen * MeanFlower.cen + (1|siteID), family = binomial(link = "logit"), data = dat16_2)
+sp_model6 <- glmer(cbind(Seed_number, Ovule_number) ~ Snowmelt_doy * Temp_total.cen * Treatment + (1|siteID), family = binomial(link = "logit"), data = dat16_2)
+dat16_2a <- na.omit(dat16_2)
+sp_model7 <- glmer(cbind(Seed_number, Ovule_number) ~ Snowmelt_doy * Temp_total.cen * MeanVisit.cen + (1|siteID), family = binomial(link = "logit"), data = dat16_2a)
+
+summary(sp_model6)
+
+
+sp_model8 <- glmer(cbind(Seed_number, Ovule_number) ~ Snowmelt_doy * (MeanFlower.cen + Treatment) + (1|siteID), family = binomial(link = "logit"), data = dat16_2)
+
+
+
+
+sp_model6 <- glmer(cbind(Seed_number, Ovule_number) ~ Temp_total.cen * (MeanFlower.cen + Treatment) + (1|siteID), family = binomial(link = "logit"), data = dat16_2)
+
+summary(sp_model5)
+summary(sp_model6)
+
+
+#
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #When removing biomass 2016 ends up with stage as sifnificant (more than last time), and 2017 with flower abundance (more than before) and temp (same importance)
@@ -72,7 +431,7 @@ dat16 <- dat16 %>%
   ungroup()
 
 ### Snumber
-sp_model <- glmer(Seed_number ~ Stage2 + MeanFlower.cen + CumTemp_after.cen + Treatment + offset(log(Number_seedovule)) + (1|siteID), family = poisson, data = dat16)
+sp_model <- glmer(Seed_number ~ Stage2 * (MeanFlower.cen + CumTemp_after.cen + Treatment) + offset(log(Number_seedovule)) + (1|siteID), family = poisson, data = dat16)
 summary(sp_model)
 
 
