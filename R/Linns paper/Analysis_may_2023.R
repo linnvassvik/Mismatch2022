@@ -21,7 +21,7 @@ dat |>
 ### Seed mass 2016
 dat16 <- dat |> 
   filter(Year == 2016)
-sm_model_16_lrt <- lme(log(Seed_mass) ~ Biomass + Stage2 + MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat16, method = "ML")
+sm_model_16 <- lme(log(Seed_mass) ~ Biomass + Stage2 + MeanFlower.cen + CumTemp_after.cen + Treatment, random =  ~ 1|siteID, data = dat16, method = "ML")
 
 # likelihood ratio test
 drop1(sm_model_16_lrt)
@@ -39,6 +39,7 @@ newdata <- crossing(Biomass = 0.1,
                     Treatment = c("Control", "Pollinated"))
 
 out <- augment(x = sm_model_16, newdata = newdata)
+
 #out <- augment(x = sm_model_16, newdata = newdata, re.form = NA)
 ggplot(dat16, aes(x = MeanFlower.cen, y = log(Seed_mass), colour = factor(Stage2))) +
   geom_point() +
@@ -118,18 +119,18 @@ flower/temp + plot_layout(guides = "collect")
 
 # sm_16 <- lme(log(Seed_mass) ~ Biomass + Stage2, random = ~ 1|BlockID, data = dat16, method = "ML")
 # 
-# newdat <- expand.grid(
-#   Biomass=c(0.00226, 0.0057, 0.0100, 0.0150, 0.0200, 0.0250, 0.0301, 0.0406, 0.0445, 0.0502, 0.0633, 0.097)
-#   , Stage2=c("2", "3", "4")
-#   , Seed_mass = 0
-# )
-# newdat$Seed_mass <- predict(sm_16, newdat, re.form=NA)
-# mm <- model.matrix(terms(fm1),newdat)
-# ## or newdat$distance <- mm %*% fixef(fm1)
-# pvar1 <- diag(mm %*% tcrossprod(vcov(fm1),mm))
-# tvar1 <- pvar1+VarCorr(fm1)$Subject[1]  ## must be adapted for more complex models
-# cmult <- 2 ## could use 1.96
-# newdat <- data.frame(
+newdat <- expand.grid(
+Biomass=c(0.00226, 0.0057, 0.0100, 0.0150, 0.0200, 0.0250, 0.0301, 0.0406, 0.0445, 0.0502, 0.0633, 0.097)
+, Stage2=c("2", "3", "4")
+, Seed_mass = 0
+)
+newdat$Seed_mass <- predict(sm_16, newdat, re.form=NA)
+mm <- model.matrix(terms(fm1),newdat)
+or newdat$distance <- mm %*% fixef(fm1)
+pvar1 <- diag(mm %*% tcrossprod(vcov(fm1),mm))
+tvar1 <- pvar1+VarCorr(fm1)$Subject[1]  ## must be adapted for more complex models
+cmult <- 2 ## could use 1.96
+newdat <- data.frame(
 #   newdat
 #   , plo = newdat$distance-cmult*sqrt(pvar1)
 #   , phi = newdat$distance+cmult*sqrt(pvar1)
