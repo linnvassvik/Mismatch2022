@@ -8,6 +8,144 @@ library(broom.mixed)
 library(nlme)
 library(ggpubr)
 
+SnowmeltSeedMass <- dat_DOY %>% 
+  mutate(Treatment = recode(Treatment, "Pollinated" = "Supplemental pollination", "Control" = "Naturally pollinated")) %>%
+  ggplot(aes(x = Snowmelt_doy, y = log(Seed_mass), fill = Treatment, color = Treatment)) +
+  geom_smooth(method = "lm") +
+  scale_fill_manual (values =  c("#FC4E07", "#E69F00")) +
+  scale_color_manual (values =  c("#FC4E07", "#E69F00")) +
+  labs(x = "Snowmelt doy", y = "log(Seed mass in g)", fill = "Treatment") +
+  theme_light() +
+  facet_wrap(~ Year) +
+  guides(fill = guide_legend(override.aes = list(color = NA)), 
+         color = "none") +
+  theme(strip.text = element_text(color = "black"))
+ggsave(SnowmeltSeedMass, filename = "Figures/SnowmeltSeedMass.jpeg", height = 6, width = 8)
+  
+SnowmeltSeedMass2 <- dat_DOY %>% 
+  mutate(Year = as.character(Year)) %>% 
+  ggplot(aes(x = Snowmelt_doy, y = log(Seed_mass), fill = Year, color = Year)) +
+  geom_smooth(method = "lm") +
+  scale_fill_manual (values =  c("#CC79A7", "#660066")) +
+  scale_color_manual (values =  c("#CC79A7", "#660066")) +
+  labs(x = "Snowmelt doy", y = "log(Seed mass in g)", fill = "Year") +
+  theme_light() +
+  facet_wrap(~ Year) +
+  guides(fill = guide_legend(override.aes = list(color = NA)), 
+         color = "none") +
+  theme(strip.text = element_text(color = "black"))
+ggsave(SnowmeltSeedMass2, filename = "Figures/SnowmeltSeedMass2.jpeg", height = 6, width = 8)
+
+#############
+
+
+TempSeedMass <- dat_DOY %>% 
+  mutate(Treatment = recode(Treatment, "Pollinated" = "Supplemental pollination", "Control" = "Naturally pollinated")) %>%
+  ggplot(aes(x = Temp_total.cen, y = log(Seed_mass), fill = Treatment, color = Treatment)) +
+  geom_smooth(method = "lm") +
+  scale_fill_manual (values =  c("#FC4E07", "#E69F00")) +
+  scale_color_manual (values =  c("#FC4E07", "#E69F00")) +
+  labs(x = "Cumulative temperature", y = "log(Seed mass in g)", fill = "Treatment") +
+  theme_light() +
+  facet_wrap(~ Year) +
+  guides(fill = guide_legend(override.aes = list(color = NA)), 
+         color = "none") +
+  theme(strip.text = element_text(color = "black"))
+ggsave(TempSeedMass, filename = "Figures/TempSeedMass.jpeg", height = 6, width = 8)
+
+
+
+#################
+
+FlowerTemp <- dat_DOY %>% 
+  mutate(Year = as.character(Year)) %>% 
+  ggplot(aes(y = MeanFlower.cen, x = Temp_total.cen, fill = Year, color = Year)) +
+  geom_smooth(method = "loess", span = 1) +
+  scale_fill_manual (values =  c("#CC79A7", "#660066")) +
+  scale_color_manual (values =  c("#CC79A7", "#660066")) +
+  labs(y = "Flower abundance", x = "Cumulative temperature", fill = "Year") +
+  theme_light() +
+  facet_wrap(~ Year) +
+  guides(fill = guide_legend(override.aes = list(color = NA)), 
+         color = "none") +
+  theme(strip.text = element_text(color = "black"))
+ggsave(FlowerTemp, filename = "Figures/FlowerTemp.jpeg", height = 6, width = 8)
+
+FlowerSeedMass <- dat_DOY %>% 
+  mutate(Year = as.character(Year)) %>% 
+  mutate(Treatment = recode(Treatment, "Pollinated" = "Supplemental pollination", "Control" = "Naturally pollinated")) %>%
+  ggplot(aes(x = MeanFlower.cen, y = log(Seed_mass), fill = Year, color = Year)) +
+  geom_smooth(method = "loess", span = 1) +
+  scale_fill_manual (values =  c("#CC79A7", "#660066")) +
+  scale_color_manual (values =  c("#CC79A7", "#660066")) +
+  labs(x = "Flower abundance", y = "log(Seed mass in g)", fill = "Year") +
+  theme_light() +
+  facet_wrap(~ Year) +
+  guides(fill = guide_legend(override.aes = list(color = NA)), 
+         color = "none") +
+  theme(strip.text = element_text(color = "black"))
+ggsave(FlowerSeedMass, filename = "Figures/FlowerSeedMass.jpeg", height = 6, width = 8)
+
+#Ikke relevant plot
+dat_DOY %>% 
+  mutate(Year = as.character(Year)) %>% 
+  mutate(Treatment = recode(Treatment, "Pollinated" = "Supplemental pollination", "Control" = "Naturally pollinated")) %>%
+  ggplot(aes(x = Snowmelt_doy, y = PeakFlower_doy, fill = Year, color = Year)) +
+  geom_smooth(method = "loess", span = 1) +
+  scale_fill_manual (values =  c("#CC79A7", "#660066")) +
+  scale_color_manual (values =  c("#CC79A7", "#660066")) +
+  labs(x = "Snowmelt doy", y = "Peak flower doy", fill = "Year") +
+  theme_light() +
+  facet_wrap(~ Year) +
+  guides(fill = guide_legend(override.aes = list(color = NA)), 
+         color = "none") +
+  theme(strip.text = element_text(color = "black"))
+
+#Lage modell med prediktor (?), høy temp - få blomster, høy temp - mange blomster, lav temp - få blomster, høy temp - mange blomster
+
+#
+
+
+TempSeedNumb <- dat_DOY %>% 
+  mutate(Treatment = recode(Treatment, "Pollinated" = "Supplemental pollination", "Control" = "Naturally pollinated")) %>%
+  ggplot(aes(x = Temp_total.cen, y = Seed_number, fill = Treatment, color = Treatment)) +
+  geom_smooth(method = "lm") +
+  scale_fill_manual (values =  c("#FC4E07", "#E69F00")) +
+  scale_color_manual (values =  c("#FC4E07", "#E69F00")) +
+  labs(x = "Cumulative temperature", y = "Seed number", fill = "Treatment") +
+  theme_light() +
+  guides(fill = guide_legend(override.aes = list(color = NA)), 
+         color = "none") +
+  theme(strip.text = element_text(color = "black"))
+ggsave(TempSeedNumb, filename = "Figures/TempSeedNumb.jpeg", height = 6, width = 8)
+
+
+SnowSeedNumb <- dat_DOY %>% 
+  mutate(Treatment = recode(Treatment, "Pollinated" = "Supplemental pollination", "Control" = "Naturally pollinated")) %>%
+  ggplot(aes(x = Snowmelt_doy, y = Seed_number, fill = Treatment, color = Treatment)) +
+  geom_smooth(method = "lm") +
+  scale_fill_manual (values =  c("#FC4E07", "#E69F00")) +
+  scale_color_manual (values =  c("#FC4E07", "#E69F00")) +
+  labs(x = "Snowmelt doy", y = "Seed number", fill = "Treatment") +
+  theme_light() +
+  guides(fill = guide_legend(override.aes = list(color = NA)), 
+         color = "none") +
+  theme(strip.text = element_text(color = "black"))
+ggsave(SnowSeedNumb, filename = "Figures/SnowSeedNumb.jpeg", height = 6, width = 8)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ###### SIMPLE PLOTS
