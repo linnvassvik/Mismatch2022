@@ -5,6 +5,7 @@
 library("tidyverse")
 library("lubridate")
 library("readxl")
+library("writexl")
 
 pn <- . %>% print(n = Inf)
 
@@ -117,7 +118,10 @@ snomelt16 <- tibble(year = c(rep(2016, 3)),
 
 snowmelt16 <- snomelt16 %>% 
   mutate(Snowmelt_date = dmy(Snowmelt_date)) %>% 
-  mutate(doy = yday(Snowmelt_date))
+  mutate(doy = yday(Snowmelt_date)) 
+  
+snowmelt16_2 <- snowmelt16 %>%   
+  rename(stage = Stage)
 
 #2017
 #importing snowmelt-dataset and joining with peak-data
@@ -128,7 +132,12 @@ Date_snowmelt <- Date_snowmelt %>%
   mutate(stage = as.factor(stage), site=as.factor(site)) %>% 
   mutate(Snowmelt_date = as.Date(Snowmelt_date)) %>% 
   rename(siteID=site) %>% 
-  mutate(doy = yday(Snowmelt_date)) 
+  mutate(doy = yday(Snowmelt_date)) %>% 
+  mutate(year = 2017)
+
+Date_Snowmelt_Combined <- bind_rows(snowmelt16_2, Date_snowmelt) 
+write_xlsx(Date_Snowmelt_Combined, "Excel\\Date_Snowmelt_Combined.xlsx")
+  
 
 ########################################################################
 
@@ -280,17 +289,30 @@ pollination2 <- pollination %>%
 
 
 # Mean total number of flowers and insect visits per
-MeanFlyFlower <- pollination2 %>% 
+MeanFlyFlower1 <- pollination2 %>% 
   group_by(year.poll, siteID) %>% 
   summarise(MeanFlowers = mean(tot.flowers),
             MeanVisit = mean(std.fly)) %>% 
   rename(Year = year.poll)
 
+MeanFlyFlower2 <- pollination2 %>% 
+  group_by(year.poll, siteID) %>% 
+  slice_max(order_by = flower.sum) %>% 
+  filter(row_number() == 1) %>%
+  select(siteID, year.poll, flower.sum, doy) %>% 
+  rename(PeakFlower_doy = doy) %>% 
+  rename(Year = year.poll) %>% 
+  rename(PeakFlower = flower.sum)
+
+MeanFlyFlower <- left_join(MeanFlyFlower1, MeanFlyFlower2, by = c("siteID", "Year"))  
+
+
 Biomass <- Biomass %>% 
   left_join(MeanFlyFlower, by = c("Year", "siteID")) %>%
   filter(!is.na (Seed_mass))
 
-
+PeakDOY <- Biomass %>% 
+  select(c("PeakFlower_doy", "Year", "BlockID"))
 
 ### Cumulative temperature for pollinated plants
 
@@ -308,7 +330,7 @@ Period <- Biomass %>%
   group_by(Year, BlockID) %>% 
   summarise(MinDate = min(Date1, na.rm = TRUE), MaxDate = max(Collected, na.rm = TRUE))
 
-  
+
 # get elevation for each plot
 MASL <- read.csv("Data_plant_pollinator_Finse_2016_2017/MASL.csv", header = TRUE, sep = ";", stringsAsFactors=FALSE)
 
@@ -319,8 +341,9 @@ meta <- Biomass %>%
   # add elevation and temp correction
   left_join(MASL, by = c("siteID"))
 
+meta_ny <- left_join(meta, PeakDOY, by = c("Year", "BlockID"))
 
-meta16_a <- meta |> 
+meta16_a <- meta_ny |> 
   filter(Year == 2016) |> 
   crossing(Weather |> 
   filter(year(date) == 2016)) %>% 
@@ -329,7 +352,7 @@ meta16_a <- meta |>
   mutate(tempAboveZeroAdi = ifelse(TempAdi > 0, TempAdi, 0)) %>% 
   filter(doy > MinDate, doy < MaxDate)
   
-meta16_b <- meta %>% 
+meta16_b <- meta_ny %>% 
   filter(Year == 2016) |> 
   crossing(Weather |> 
              filter(year(date) == 2016)) %>% 
@@ -343,8 +366,21 @@ meta16_b <- meta %>%
   # remove climate data where doy is smaller/large than doy
   filter(doy > Snowmelt_doy, doy < MinDate)
 
+meta16_c <- meta_ny %>% 
+  filter(Year == 2016) |> 
+  crossing(Weather |> 
+             filter(year(date) == 2016)) %>% 
+  right_join(snowmelt16, by = c("Stage")) %>% 
+  select(-Snowmelt_date) %>% 
+  rename (Snowmelt_doy = doy.y) %>% 
+  rename(doy = doy.x) %>% 
+  #trekt i fra den adiabatiske temperaturen, mer korrekt temp pr site
+  mutate(TempAdi = temperature - Adiabatic.temp) %>% 
+  mutate(tempAboveZeroAdi = ifelse(TempAdi > 0, TempAdi, 0)) %>% 
+  # remove climate data where doy is smaller/large than doy
+  filter(doy > Snowmelt_doy, doy < PeakFlower_doy)
   
-meta17_a <- meta |> 
+meta17_a <- meta_ny |> 
   filter(Year == 2017) |> 
   crossing(Weather |> 
              filter(year(date) == 2017)) %>% 
@@ -354,7 +390,7 @@ meta17_a <- meta |>
   filter(doy > MinDate, doy < MaxDate) %>% 
   group_by(Year, BlockID, Plant)
 
-meta17_b <- meta %>% 
+meta17_b <- meta_ny %>% 
   filter(Year == 2017) |> 
   crossing(Weather |> 
              filter(year(date) == 2017)) %>% 
@@ -369,6 +405,20 @@ meta17_b <- meta %>%
   filter(doy > Snowmelt_doy, doy < MaxDate) %>% 
   group_by(Year, BlockID, Plant)
   
+meta17_c <- meta_ny %>% 
+  filter(Year == 2017) |> 
+  crossing(Weather |> 
+             filter(year(date) == 2017)) %>% 
+  right_join(Date_snowmelt, by = c("siteID")) %>% 
+  select(-Snowmelt_date, -stage) %>% 
+  rename (Snowmelt_doy = doy.y) %>% 
+  rename(doy = doy.x) %>% 
+  #trekt i fra den adiabatiske temperaturen, mer korrekt temp pr site
+  mutate(TempAdi = temperature - Adiabatic.temp) %>% 
+  mutate(tempAboveZeroAdi = ifelse(TempAdi > 0, TempAdi, 0)) %>% 
+  # remove climate data where doy is smaller/large than doy
+  filter(doy > Snowmelt_doy, doy < PeakFlower_doy) %>% 
+  group_by(Year, BlockID, Plant)
   
 WeatherAndBiomass1 <- bind_rows(meta16_a, meta17_a) |> 
   group_by(Year, BlockID, Plant) %>%
@@ -380,9 +430,20 @@ WeatherAndBiomass2 <- bind_rows(meta16_b, meta17_b) |>
   summarise(CumTemp_before = sum(tempAboveZeroAdi, na.rm = TRUE)) |> 
   left_join(Biomass, by = c("Year", "BlockID", "Plant")) %>% 
   select(-c(Biomass:MeanVisit))
+
+WeatherAndBiomass_Peak <- bind_rows(meta16_c, meta17_c) |> 
+  group_by(Year, BlockID, Plant) %>%
+  summarise(CumTemp_Peak = sum(tempAboveZeroAdi, na.rm = TRUE)) |> 
+  left_join(Biomass, by = c("Year", "BlockID", "Plant")) %>% 
+  select(-c(Biomass:MeanVisit))
   
-WeatherAndBiomass <- WeatherAndBiomass1 %>%  
+WeatherAndBiomass_temporary <- WeatherAndBiomass1 %>%  
   left_join(WeatherAndBiomass2) %>%  
+  group_by(Year, BlockID, Plant) %>% 
+  select(Year, BlockID, Plant, CumTemp_before, everything())
+
+WeatherAndBiomass <- WeatherAndBiomass_temporary %>%  
+  left_join(WeatherAndBiomass_Peak) %>%  
   group_by(Year, BlockID, Plant) %>% 
   select(Year, BlockID, Plant, CumTemp_before, everything())
 
@@ -410,15 +471,19 @@ dat3 <- WeatherAndBiomass5 %>%
   ungroup() 
 
 #########
+WeatherAndBiomass$MeanVisit[is.infinite(WeatherAndBiomass$MeanVisit)] <- NA
+
 
 #rescale
 d1 <- as_tibble(x = scale(WeatherAndBiomass$CumTemp_before))
 d3 <- as_tibble(x = scale(WeatherAndBiomass$CumTemp_after))
 d2 <- as_tibble(x = scale(WeatherAndBiomass$MeanFlowers))
+d4 <- as_tibble(x = scale(WeatherAndBiomass$MeanVisit))
+d5 <- as_tibble(x = scale(WeatherAndBiomass$CumTemp_Peak))
 
 WeatherAndBiomass <- WeatherAndBiomass %>% 
-  bind_cols(d1, d2, d3) %>% 
-  rename(CumTemp_before.cen = V1...29, MeanFlower.cen = V1...30, CumTemp_after.cen = V1...31,)
+  bind_cols(d1, d2, d3, d4, d5) %>% 
+  rename(CumTemp_before.cen = V1...32, MeanFlower.cen = V1...33, CumTemp_after.cen = V1...34, MeanVisit.cen = V1...35, CumTemp_Peak.cen = V1...36)
 
 # prep data
 dat <- WeatherAndBiomass |> 
@@ -431,10 +496,31 @@ dat <- WeatherAndBiomass |>
   # make sure that Control Treatment comes first
   mutate(Treatment = factor(Treatment, levels = c("Control", "Pollinated")))
 
+Date_Snowmelt_Combined_2 <- read_excel("Data_plant_pollinator_Finse_2016_2017/Date_Snowmelt_Combined.xlsx") %>% 
+  rename(Snowmelt_doy = doy) %>% 
+  select(-year, -stage, -Snowmelt_date)
+
+
 dat2 <- dat %>% 
   group_by(BlockID, Year, Plant) %>% 
-  mutate(Temp_total.cen = (CumTemp_before.cen + CumTemp_after.cen)) %>% 
+  mutate(Temp_total = (CumTemp_before + CumTemp_after)) %>% 
   ungroup() 
+
+dat_DOY <- left_join(dat2, Date_Snowmelt_Combined_2, by = "siteID")
+
+dat_DOY <- dat_DOY %>% 
+  mutate(DOY_sinceSM = PeakFlower_doy - Snowmelt_doy)
+
+d6 <- as_tibble(x = scale(dat_DOY$Snowmelt_doy))
+d7 <- as_tibble(x = scale(dat_DOY$Temp_total))
+d8 <- as_tibble(x = scale(dat_DOY$PeakFlower_doy))
+d9 <- as_tibble(x = scale(dat_DOY$DOY_sinceSM))
+
+dat_DOY <- dat_DOY %>% 
+  bind_cols(d6, d7, d8, d9) %>% 
+  rename(Snowmelt_doy.cen = `V1...41`, Temp_total.cen = `V1...42`, PeakFlower_doy.cen = `V1...43`, DOY_sinceSM.cen = `V1...44`)
+
+
 
 # old code
 # WeatherAndBiomass <- Biomass %>%
