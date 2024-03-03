@@ -43,7 +43,7 @@ TempSnow16b_plot <- make_prettyplot(dat = dat16,
                                     shape = as.factor(Year)) +
   scale_color_manual(values = "#666666", name = "doy", label = "mean") +
   scale_fill_manual(values = "#666666", name = "doy", label = "mean") +
-  labs(x = "Cumulative temperature above 0 °C", y = "log(Seed mass (g))", title = "2016") +
+  labs(x = "Growing degree days above 0 °C", y = "log(Seed mass (g))", title = "2016") +
   theme_minimal() +
   ylim(-12, -2) +
   theme(legend.position = "none")
@@ -83,7 +83,7 @@ TempSnow17b_plot <- make_prettyplot(dat = dat17,
                                     line_type = "dashed") +
   scale_color_manual(values = c("#666666"), name = "doy") +
   scale_fill_manual(values = c("#666666"), name = "doy") +
-  labs(x = "Cumulative temperature above 0 °C", y = "", title = "2017") +
+  labs(x = "Growing degree days above 0 °C", y = "", title = "2017") +
   theme_minimal() +
   ylim(-12, -2) +
   theme(legend.position = "none")
@@ -118,7 +118,7 @@ Treatment16_plot <- make_prettyplot(dat = dat16,
                                     line_type = "solid") +
   scale_color_manual(values = c("#99CC99", "#003300"), name = "", labels = c("Control", "Supplement pollen")) +
   scale_fill_manual(values = c("#99CC99", "#003300"), name = "", labels = c("Control", "Supplement pollen")) +
-  labs(x = "Cumulative temperature above 0 °C", y = "log(Seed mass (g))", title = "2016") +
+  labs(x = "Growing degree days above 0 °C", y = "log(Seed mass (g))", title = "2016") +
   ylim(-12,-2)
 
 #2017
@@ -138,7 +138,7 @@ Treatment17_plot <- make_prettyplot(dat = dat17,
                                     line_type = "solid") +
   scale_color_manual(values = c("#99CC99", "#003300"), name = "", labels = c("Control", "Supplement pollen")) +
   scale_fill_manual(values = c("#99CC99", "#003300"), name = "", labels = c("Control", "Supplement pollen")) +
-  labs(x = "Cumulative temperature above 0 °C", y = "log(Seed mass (g))", title = "2017") +
+  labs(x = "Growing degree days above 0 °C", y = "log(Seed mass (g))", title = "2017") +
   ylim(-12,-2)
 
 TreatmentPlot <- ggarrange(Treatment16_plot, Treatment17_plot, common.legend = TRUE, legend = "bottom") 
@@ -153,7 +153,7 @@ Flower16 <- make_prediction(Newdata16_Flower, sm_model_16_4) %>%
   mutate(MeanFlowers = (MeanFlower.cen*sd(WeatherAndBiomass$MeanFlowers)+mean(WeatherAndBiomass$MeanFlowers))) %>% 
   mutate(Temp_total = (Temp_total.cen*sd(dat_DOY$Temp_total)+mean(dat_DOY$Temp_total)))
 
-Flower16_plot <- make_prettyplot(dat = dat16, 
+Flower16_SM_plot <- make_prettyplot(dat = dat16, 
                                  Newdata = Flower16, 
                                  xaxis = Temp_total, 
                                  yaxis = log(Seed_mass), 
@@ -161,10 +161,10 @@ Flower16_plot <- make_prettyplot(dat = dat16,
                                  ColorVariable = as.factor(MeanFlowers),
                                  SE = SE,
                                  line_type = "solid") +
-  scale_color_manual(values = c("#6699CC", "#000033"), name = "Mean flowers (count)", labels = c("low (400)", "high (6500)")) +
-  scale_fill_manual(values = c("#6699CC", "#000033"), name = "Mean flowers (count)", labels = c("low (400)", "high (6500)")) +
+  scale_color_manual(values = c("#6699CC", "#000033"), name = "Floral density (count)", labels = c("low (400)", "high (6500)")) +
+  scale_fill_manual(values = c("#6699CC", "#000033"), name = "Floral density (count)", labels = c("low (400)", "high (6500)")) +
   ylim(-12, 0) +
-  labs(x = "Cumulative temperature above 0 °C", y = "log(Seed mass in (g))", title = "2016") +
+  labs(x = "Growing degree days above 0 °C", y = "log(Seed mass in (g))", title = "2016") +
   theme(legend.position = "bottom")
 
 
@@ -183,23 +183,44 @@ Flower17_plot <- make_prettyplot(dat = dat17,
                                  ColorVariable = "#666666",
                                  SE = SE,
                                  line_type = "dashed") +
-  scale_color_manual(values = "#666666", name = "Mean flowers (count)") +
-  scale_fill_manual(values = "#666666", name = "Mean flowers (count)") +
+  scale_color_manual(values = "#666666", name = "", labels = "Mean floral density") +
+  scale_fill_manual(values = "#666666", name = "", labels = "Mean floral density") +
   ylim(-12, 0) +
-  labs(x = "Cumulative temperature above 0 °C", y = "", title = "2017") +
-  theme(legend.position = "none")
+  labs(x = "Growing degree days above 0 °C", y = "", title = "2017") +
+  theme(legend.position = "bottom")
 
 Flower_Comb <- ggarrange(Flower16_plot, Flower17_plot)
 ggsave(Flower_Comb, filename = "Figures/Flower_Comb.jpeg", height = 6, width = 8)
 
-SeedMassPlot <- ggarrange(ggarrange(Treatment16_plot, Treatment17_plot, ncol = 2, labels = "a", common.legend = TRUE, legend = "bottom"),
-  ggarrange(Flower16_plot, Flower17_plot, ncol = 2, labels = "b"),
+SeedMassPlot <- ggarrange(ggarrange(Flower16_SM_plot, Flower17_plot, ncol = 2, labels = "a"),
+  ggarrange(Treatment16_plot, Treatment17_plot, common.legend = TRUE, legend = "bottom", ncol = 2, labels = "b"),
   nrow = 2)
-ggsave(SeedMassPlot, filename = "Figures/SeedMassPlot.jpeg", height = 6, width = 8)
+ggsave(SeedMassPlot, filename = "Figures/SeedMassPlot.jpeg", height = 10, width = 8)
+
+
+
+SM16_Visit <- expand.grid(Temp_total.cen = mean(dat16$Temp_total.cen), MeanVisit.cen = mean(dat16$MeanVisit.cen), Seed_mass = 0, Snowmelt_doy = seq(169, 197, length = 100))
+
+SMVisit16 <- make_prediction(SM16_Visit, sm_model_16_5) %>%  
+  mutate(MeanVisit = (MeanVisit.cen * sd(WeatherAndBiomass$MeanVisit) + mean(WeatherAndBiomass$MeanVisit)))
+
+Visit16_SM_plot <- make_prettyplot(dat = dat16, 
+                                Newdata = SMVisit16, 
+                                xaxis = Snowmelt_doy, 
+                                yaxis = log(Seed_mass), 
+                                prediction = pred, 
+                                ColorVariable = "#666666",
+                                SE = SE,
+                                line_type = "dashed") +
+  scale_color_manual(values = "#666666", name = "", labels = "Mean visitation (rate)") +
+  scale_fill_manual(values = "#666666", name = "", labels = "Mean visitation (rate)") +
+  labs(x = "Growing degree days above 0 °C", y = "log(Seed mass in (g))", title = "") +
+  theme(legend.position = "bottom")
+
+ggsave(Visit16_SM_plot, filename = "Figures/Visit16_SM_plot.jpeg", height = 6, width = 8)
+
 
 #### Seed number
-library(rioja)
-library(stats)
 
 #Abiotic
 SN_Ab <- expand.grid(Temp_total.cen = seq(-1.8, 0.3, length = 100), Seed_potential = 0, Snowmelt_doy.cen = c(0.3, 1.68), siteID = "E 01")
@@ -219,7 +240,7 @@ SN16_plot <- make_glmer_plot(dat = dat16,
                 phi = phi) +
   scale_color_manual(values = c("#FFCC66", "#990000"), name = "Timing of snowmelt (DOY)", label = c("early (170)", "late (190)")) +
   scale_fill_manual(values = c("#FFCC66", "#990000"), name = "Timing of snowmelt (DOY)", label = c("early (170)", "late (190)")) +
-  labs(x = "Cumulative temperature above 0 (°C)", y = "Seed number/Total ovule number", title = "") +
+  labs(x = "Growing degree days above 0 °C", y = "Seed number/Total ovule number", title = "") +
   theme(legend.position = "bottom")
 
 ggsave(SN16_plot, filename = "Figures/SN16_plot.jpeg", height = 6, width = 8)
@@ -242,9 +263,9 @@ Flower16_plot <- make_glmer_plot(dat = dat16,
                                  ColorVariable = as.factor(MeanFlowers),
                                  plo = plo, 
                                  phi = phi) +
-  scale_color_manual(values = c("#6699CC", "#000033"), name = "Mean flowers (count)", labels = c("low (400)", "high (6500)")) +
-  scale_fill_manual(values = c("#6699CC", "#000033"), name = "Mean flowers (count)", labels = c("low (400)", "high (6500)")) +
-  labs(x = "Cumulative temperature above °C", y = "Seed number/Total ovule number", title = "") +
+  scale_color_manual(values = c("#6699CC", "#000033"), name = "Floral density (count)", labels = c("low (400)", "high (6500)")) +
+  scale_fill_manual(values = c("#6699CC", "#000033"), name = "Floral density (count)", labels = c("low (400)", "high (6500)")) +
+  labs(x = "Growing degree days above 0 °C", y = "Proportion developed seeds", title = "") +
   theme(legend.position="bottom")
 
 #Visits
@@ -264,7 +285,7 @@ Visit16_plot <- make_glmer_plot(dat = dat16,
                                  phi = phi) +
   scale_color_manual(values = c("#FF9999", "#CC3366"), name = "Visitation (rate)", label = c("low (0.005)", "high (0.025)")) +
   scale_fill_manual(values = c("#FF9999", "#CC3366"), name = "Visitation (rate)", label = c("low (0.005)", "high (0.025)")) +
-  labs(x = "Cumulative temperature above 0 °C", y = "Seed number/Total ovule number", title = "") +
+  labs(x = "Growing degree days above 0 °C", y = "Proportion developed seeds", title = "") +
   theme(legend.position="bottom")
 
 FlVis <- ggarrange(Flower16_plot, Visit16_plot)
@@ -288,7 +309,7 @@ Treat16_plot <- make_glmer_plot(dat = dat16,
                                  phi = phi) +
   scale_color_manual(values = c("#99CC99", "#003300"), name = "", labels = c("Control", "Supplement pollen")) +
   scale_fill_manual(values = c("#99CC99", "#003300"), name = "", labels = c("Control", "Supplement pollen")) +
-  labs(x = "Cumulative temperature above 0 °C", y = "Seed number/Total ovule number", title = "") +
+  labs(x = "Growing degree days above 0 °C", y = "Proportion developed seeds", title = "") +
   theme(legend.position="bottom")
 
 
@@ -308,20 +329,20 @@ Treat16_2_plot <- make_glmer_plot(dat = dat16,
                                  phi = phi) +
   scale_color_manual(values = c("#003300", "#99CC99"), name = "", labels = c("Control", "Supplement pollen")) +
   scale_fill_manual(values = c("#003300", "#99CC99"), name = "", labels = c("Control", "Supplement pollen")) +
-  labs(x = "Timing of snowmelt (DOY)", y = "Seed number/Total ovule number", title = "") +
+  labs(x = "Timing of snowmelt (DOY)", y = "Proportion developed seeds", title = "") +
   theme(legend.position="bottom")
 
 TreatmentSN <- ggarrange(Flower16_plot, Flower16_2_plot, common.legend = TRUE, legend="bottom")
 ggsave(TreatmentSN, filename = "Figures/TreatmentSN.jpeg", height = 6, width = 8)
 
 
-SeedNumberPlot <- ggarrange(ggarrange(Treat16_plot, Treat16_2_plot, ncol = 2, labels = "a", common.legend = TRUE, legend = "bottom", label.x = 0.1),
-                          ggarrange(Flower16_plot, Visit16_plot, ncol = 2, labels = c("b", "c"), label.x = 0.1),
+SeedNumberPlot <- ggarrange(ggarrange(Flower16_plot, Visit16_plot, ncol = 2, labels = c("a", "b"), legend = "bottom", label.x = 0.1),
+                          ggarrange(Treat16_plot, Treat16_2_plot, ncol = 2, labels = "c", common.legend = TRUE, legend = "bottom", label.x = 0.1),
                           nrow = 2)
-ggsave(SeedNumberPlot, filename = "Figures/SeedNumberPlot.jpeg", height = 6, width = 8)
+
+
+ggsave(SeedNumberPlot, filename = "Figures/SeedNumberPlot.jpeg", height = 10, width = 8)
 
 
 
-dat16 %>% 
-  ggplot(aes(x = Seed_mass, y = Seed_potential, color = Snowmelt_doy)) +
-  geom_point()
+
