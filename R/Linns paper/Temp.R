@@ -36,7 +36,79 @@ lapse_rate <- 6.5  # in °C/1000m
 Klima <- Klima %>% 
   mutate(Temp16New = (TempS16 - (lapse_rate * 228/1000))) %>% 
   mutate(Temp17New = (TempS17 - (lapse_rate * 228/1000)))
+
+#Klima wihtout DOY longform
+Klima_Year <- Klima %>% 
+  select(-TempS17, -TempS16) %>% 
+  pivot_longer(cols = starts_with("Temp"),
+               names_to = "Year",
+               values_to = "Temperature") %>%
+  mutate(Year = if_else(str_detect(Year, "16"), "2016", "2017"))
+
+#Load temperature dataset from ibutton
+iButtonFinse <- read_excel("Data_plant_pollinator_Finse_2016_2017/2016/Weather_iButton_2016.xlsx") %>% 
+  separate(Date, into = c("Date", "Time"), sep = " ") %>%
+  mutate(Date = as.Date(Date))
+
+#average temp per day
+iButtonFinse_avrg <- aggregate(iButtonFinse$Temperature, by = list(iButtonFinse$Date, iButtonFinse$ID), FUN = mean) %>% 
+  rename(Date = Group.1) %>% 
+  rename(ID = Group.2) %>% 
+  rename(TempButton = x)
+
+ATemp_16 <- ATemp %>% 
+  filter(!ID %in% paste0("f", sprintf("%02d", 1:8))) %>% 
+  select(-ATemp, -MASLCorr)
+
+iButtonMASL <- iButtonFinse_avrg %>% 
+  left_join(ATemp_16, by = "ID")
+
+iButtonMASL %>% 
+  ggplot(aes(y = TempButton, x = MASL)) +
+  geom_point() +
+  geom_smooth()
+
+ModelTemp <- lm(MASL ~ TempButton, data = iButtonMASL)
+
+summary(ModelTemp)
+
   
-  
-  
-  
+
+
+
+
+
+
+
+##########
+#########
+t_test_result <- t.test(Klima$Temp16New, Klima$Temp17New, paired = TRUE)
+
+print(t_test_result) 
+
+# Calculate the differences between Temp16New and Temp17New
+Klima_filtered <- Klima %>%
+  filter(DOY > 140 & DOY < 197)
+
+differences <- Klima_filtered$Temp16New - Klima_filtered$Temp17New
+average_difference <- mean(differences)
+
+# Print the average difference
+print(average_difference)
+
+##############
+#############
+average_seed_proportion <- dat16 %>%
+  filter(Snowmelt_doy == 169) %>%
+  summarise(average_seed_proportion = mean(Seed_potential, na.rm = TRUE))
+
+average_seed_proportion <- dat16 %>%
+  filter(Snowmelt_doy == 186) %>%
+  summarise(average_seed_proportion = mean(Seed_potential, na.rm = TRUE))
+
+dat_fly <- dat %>% 
+  group_by(Year) %>% 
+  summarise(Visit_rate_fly <- mean(MeanVisit))
+
+model_vis <- lm(MeanVisit ~Year, data = dat)
+summary(model_vis)
