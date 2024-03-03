@@ -321,3 +321,10 @@ TemperatureFinse_comb2 <- ggplot() +
   guides(linetype = guide_legend(title = "Year", override.aes = list(color = "black")), fill = "none", color = "none")
 
 ggsave(TemperatureFinse_comb2, filename = "Figures/TemperatureFinse_comb2.jpeg", height = 6, width = 8)
+
+ggplot() +
+  geom_smooth(data = Temperature_all, aes(x = doy, y = Temp_2016_ALR, color = "2016"), alpha = 0, span = 0.8) +
+  geom_smooth(data = Temperature_all, aes(x = doy, y = Temp_2017_ALR, color = "2017"), alpha = 0, span = 0.8) +
+  labs(x = "Day of the year (doy)", y = "Average daily temperature (°C)", color = "") +
+  scale_color_manual(values = c("2016" = "#CC9999", "2017" = "#330000")) +
+  theme_minimal()
