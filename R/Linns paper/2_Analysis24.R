@@ -29,7 +29,7 @@ sm_model_16_4 <- lme(log(Seed_mass) ~ (Temp_total.cen + Snowmelt_doy) * MeanFlow
 sm_model_16_5 <- lme(log(Seed_mass) ~ (Temp_total.cen + Snowmelt_doy) * MeanVisit.cen, random =  ~ 1|siteID, data = dat16)
 sm_model_16_6 <- lme(log(Seed_mass) ~ (Temp_total.cen + Snowmelt_doy) * Treatment, random =  ~ 1|siteID, data = dat16)
 
-summary(sm_model_16_6)
+summary(sm_model_16_3)
 
 
 
