@@ -6,6 +6,7 @@ library("tidyverse")
 library("lubridate")
 library("readxl")
 library("writexl")
+library(tidylog)
 
 pn <- . %>% print(n = Inf)
 
@@ -113,9 +114,9 @@ sites <- sites %>%
 
 #2016
 snomelt16 <- tibble(year = c(rep(2016, 3)),
-                           Stage = c("E", "M", "L"),
-                           Snowmelt_date = c("17.06.2016", "04.07.2016", "15.07.2016"))
-
+                            Stage = c("E", "M", "L"),
+                            Snowmelt_date = c("17.06.2016", "04.07.2016", "15.07.2016"))
+ 
 snowmelt16 <- snomelt16 %>% 
   mutate(Snowmelt_date = dmy(Snowmelt_date)) %>% 
   mutate(doy = yday(Snowmelt_date)) 
@@ -273,7 +274,6 @@ Biomass <- biomass16 %>%
 
 ########################################################################
 ### JOIN PHENOLOGY AND POLLINATION ####
-
 # Find closest phenology observation to each pollination observation
 pollination2 <- pollination %>% 
   full_join(phenology, by = c("site", "stage", "siteID"), suffix = c(".poll",".fl")) %>% 
@@ -285,8 +285,11 @@ pollination2 <- pollination %>%
   mutate(doy = yday(date)) %>% 
   mutate(flowering = ifelse(abs.diff > 3, NA, flower.sum)) %>% # could check how much different flowers are
   mutate(tot.flowers = flower.sum*2*area) %>% # added new column: total number of flowers pr. area (based on mean flowers)
-  mutate(std.fly = fly/tot.flowers) # standardize insect observation by fl per area
+  mutate(std.fly = fly/tot.flowers)  # standardize insect observation by fl per area
 
+pollination2$std.fly <- ifelse(is.infinite(pollination2$std.fly), 0.00001, pollination2$std.fly)
+  
+###M5 and M7 doesnt have any flowers in the phenology recordings in plots, but visits also included outside of plots, therefore returns as visits/0 flowers = 0
 
 # Mean total number of flowers and insect visits per
 MeanFlyFlower1 <- pollination2 %>% 
@@ -448,27 +451,27 @@ WeatherAndBiomass <- WeatherAndBiomass_temporary %>%
   select(Year, BlockID, Plant, CumTemp_before, everything())
 
 ######
-#just temperature, no cumulative temp
-WeatherAndBiomass3 <- bind_rows(meta16_a, meta17_a) |> 
-  group_by(Year, BlockID, Plant) %>%
-  summarise(Temp_after = tempAboveZeroAdi, na.rm = TRUE) |> 
-  left_join(Biomass, by = c("Year", "BlockID", "Plant"))
-
-WeatherAndBiomass4 <- bind_rows(meta16_b, meta17_b) |> 
-  group_by(Year, BlockID, Plant) %>%
-  summarise(Temp_before = tempAboveZeroAdi, na.rm = TRUE) |> 
-  left_join(Biomass, by = c("Year", "BlockID", "Plant")) %>% 
-  select(-c(Biomass:MeanVisit))
-
-WeatherAndBiomass5 <- WeatherAndBiomass3 %>%  
-  left_join(WeatherAndBiomass4) %>%  
-  group_by(Year, BlockID, Plant) %>% 
-  select(Year, BlockID, Plant, everything())
-
-dat3 <- WeatherAndBiomass5 %>% 
-  group_by(BlockID, Year, Plant) %>% 
-  mutate(Temp_total = ((Temp_before + Temp_after)/2)) %>% 
-  ungroup() 
+# #just temperature, no cumulative temp
+# WeatherAndBiomass3 <- bind_rows(meta16_a, meta17_a) |> 
+#   group_by(Year, BlockID, Plant) %>%
+#   summarise(Temp_after = tempAboveZeroAdi, na.rm = TRUE) |> 
+#   left_join(Biomass, by = c("Year", "BlockID", "Plant"))
+# 
+# WeatherAndBiomass4 <- bind_rows(meta16_b, meta17_b) |> 
+#   group_by(Year, BlockID, Plant) %>%
+#   summarise(Temp_before = tempAboveZeroAdi, na.rm = TRUE) |> 
+#   left_join(Biomass, by = c("Year", "BlockID", "Plant")) %>% 
+#   select(-c(Biomass:MeanVisit))
+# 
+# WeatherAndBiomass5 <- WeatherAndBiomass3 %>%  
+#   left_join(WeatherAndBiomass4) %>%  
+#   group_by(Year, BlockID, Plant) %>% 
+#   select(Year, BlockID, Plant, everything())
+# 
+# dat3 <- WeatherAndBiomass5 %>% 
+#   group_by(BlockID, Year, Plant) %>% 
+#   mutate(Temp_total = ((Temp_before + Temp_after)/2)) %>% 
+#   ungroup() 
 
 #########
 WeatherAndBiomass$MeanVisit[is.infinite(WeatherAndBiomass$MeanVisit)] <- NA
@@ -496,9 +499,9 @@ dat <- WeatherAndBiomass |>
   # make sure that Control Treatment comes first
   mutate(Treatment = factor(Treatment, levels = c("Control", "Pollinated")))
 
-Date_Snowmelt_Combined_2 <- read_excel("Data_plant_pollinator_Finse_2016_2017/Date_Snowmelt_Combined.xlsx") %>% 
-  rename(Snowmelt_doy = doy) %>% 
-  select(-year, -stage, -Snowmelt_date)
+Date_Snowmelt_Combined_2 <- read_excel("Data_plant_pollinator_Finse_2016_2017/Date_Snowmelt_Combined.xlsx") %>%
+  rename(Snowmelt_doy = doy) %>%
+  select(-stage, -Snowmelt_date)
 
 
 dat2 <- dat %>% 
@@ -506,7 +509,10 @@ dat2 <- dat %>%
   mutate(Temp_total = (CumTemp_before + CumTemp_after)) %>% 
   ungroup() 
 
-dat_DOY <- left_join(dat2, Date_Snowmelt_Combined_2, by = "siteID")
+dat_DOY <- left_join(dat2, Date_Snowmelt_Combined_2, 
+                     by = c("siteID", "Year" = "year"))
+# Date_Snowmelt_Combined_2 %>% anti_join(dat2, by = c("siteID", "year" = "Year"))
+
 
 dat_DOY <- dat_DOY %>% 
   mutate(DOY_sinceSM = PeakFlower_doy - Snowmelt_doy)
@@ -518,9 +524,11 @@ d9 <- as_tibble(x = scale(dat_DOY$DOY_sinceSM))
 
 dat_DOY <- dat_DOY %>% 
   bind_cols(d6, d7, d8, d9) %>% 
-  rename(Snowmelt_doy.cen = `V1...41`, Temp_total.cen = `V1...42`, PeakFlower_doy.cen = `V1...43`, DOY_sinceSM.cen = `V1...44`)
+  rename(Snowmelt_doy.cen = `V1...41`, Temp_total.cen = `V1...42`, PeakFlower_doy.cen = `V1...43`, DOY_sinceSM.cen = `V1...44`) %>% 
+  mutate(plantID = paste(siteID, Plant, sep = " "))
 
-
+#meanSMdoy <- attr(scale(dat_DOY$Snowmelt_doy), "scaled:center")
+# sdSMdoy <- attr(scale(dat_DOY$Snowmelt_doy), "scaled:scale")
 
 # old code
 # WeatherAndBiomass <- Biomass %>%
