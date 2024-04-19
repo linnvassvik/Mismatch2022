@@ -100,9 +100,9 @@ print(average_difference)
 #############
 average_seed_proportion <- dat16 %>%
   filter(Snowmelt_doy == 169) %>%
-  summarise(average_seed_proportion = mean(Seed_potential, na.rm = TRUE))
+  summarise(average_seed_proportion = mean(Seed_number, na.rm = TRUE))
 
-average_seed_proportion <- dat16 %>%
+average_seed_proportion2 <- dat16 %>%
   filter(Snowmelt_doy == 186) %>%
   summarise(average_seed_proportion = mean(Seed_potential, na.rm = TRUE))
 
@@ -112,3 +112,9 @@ dat_fly <- dat %>%
 
 model_vis <- lm(MeanVisit ~Year, data = dat)
 summary(model_vis)
+
+
+
+Seeds <- dat16 %>% 
+  filter(Snowmelt_doy == 169) %>% 
+  summarise
