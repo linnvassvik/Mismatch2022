@@ -295,7 +295,9 @@ pollination2$std.fly <- ifelse(is.infinite(pollination2$std.fly), 0.00001, polli
 MeanFlyFlower1 <- pollination2 %>% 
   group_by(year.poll, siteID) %>% 
   summarise(MeanFlowers = mean(tot.flowers),
-            MeanVisit = mean(std.fly)) %>% 
+            MeanVisit = mean(std.fly),
+            MeanFly = mean(fly),
+            TotFly = sum(fly)) %>% 
   rename(Year = year.poll)
 
 MeanFlyFlower2 <- pollination2 %>% 
@@ -483,10 +485,12 @@ d3 <- as_tibble(x = scale(WeatherAndBiomass$CumTemp_after))
 d2 <- as_tibble(x = scale(WeatherAndBiomass$MeanFlowers))
 d4 <- as_tibble(x = scale(WeatherAndBiomass$MeanVisit))
 d5 <- as_tibble(x = scale(WeatherAndBiomass$CumTemp_Peak))
+d6 <- as_tibble(x = scale(WeatherAndBiomass$MeanFly))
+d7 <- as_tibble(x = scale(WeatherAndBiomass$TotFly))
 
 WeatherAndBiomass <- WeatherAndBiomass %>% 
-  bind_cols(d1, d2, d3, d4, d5) %>% 
-  rename(CumTemp_before.cen = V1...32, MeanFlower.cen = V1...33, CumTemp_after.cen = V1...34, MeanVisit.cen = V1...35, CumTemp_Peak.cen = V1...36)
+  bind_cols(d1, d2, d3, d4, d5, d6, d7) %>% 
+  rename(CumTemp_before.cen = V1...34, MeanFlower.cen = V1...35, CumTemp_after.cen = V1...36, MeanVisit.cen = V1...37, CumTemp_Peak.cen = V1...38, MeanFly.cen = V1...39, TotFly.cen = V1...40)
 
 # prep data
 dat <- WeatherAndBiomass |> 
@@ -517,14 +521,14 @@ dat_DOY <- left_join(dat2, Date_Snowmelt_Combined_2,
 dat_DOY <- dat_DOY %>% 
   mutate(DOY_sinceSM = PeakFlower_doy - Snowmelt_doy)
 
-d6 <- as_tibble(x = scale(dat_DOY$Snowmelt_doy))
-d7 <- as_tibble(x = scale(dat_DOY$Temp_total))
-d8 <- as_tibble(x = scale(dat_DOY$PeakFlower_doy))
-d9 <- as_tibble(x = scale(dat_DOY$DOY_sinceSM))
+d8 <- as_tibble(x = scale(dat_DOY$Snowmelt_doy))
+d9 <- as_tibble(x = scale(dat_DOY$Temp_total))
+d10 <- as_tibble(x = scale(dat_DOY$PeakFlower_doy))
+d11 <- as_tibble(x = scale(dat_DOY$DOY_sinceSM))
 
 dat_DOY <- dat_DOY %>% 
-  bind_cols(d6, d7, d8, d9) %>% 
-  rename(Snowmelt_doy.cen = `V1...41`, Temp_total.cen = `V1...42`, PeakFlower_doy.cen = `V1...43`, DOY_sinceSM.cen = `V1...44`) %>% 
+  bind_cols(d8, d9, d10, d11) %>% 
+  rename(Snowmelt_doy.cen = `V1...45`, Temp_total.cen = `V1...46`, PeakFlower_doy.cen = `V1...47`, DOY_sinceSM.cen = `V1...48`) %>% 
   mutate(plantID = paste(siteID, Plant, sep = " "))
 
 #meanSMdoy <- attr(scale(dat_DOY$Snowmelt_doy), "scaled:center")
