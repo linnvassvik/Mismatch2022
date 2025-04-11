@@ -1,20 +1,12 @@
-# Plant-pollinator interactions along snowmelt gradients at Finse in Norway.
+Code used for analysis in paper by Vassvik et al. 2024:
 
+# **Temporal and spatial variation in the direct and indirect effects of climate on reproduction in alpine populations of _Ranunculus acris_ L**
 
-Description: This study investigates plant-pollinator interactions and reproduction in the pollinator-generalist plant species Ranunculus acris L. along a snowmelt gradient in the alpine area of Finse in western Norway over two growing seasons (2016 and 2017).
-The snowmelt gradient creates patches with different times of snowmelt, and thus onset of flowering.
-The spatial distribution of flowering and pollinator activity is used to investigate whether sub-populations with different times of flowering experience different synchrony with their pollinators, assessing the potential for temporal plant-pollinator mismatches.
-In addition, a hand-pollination experiment was conducted to investigate whether a sub-population’s synchrony with its pollinators affects plant reproductive ability.
+Paper can be found here: https://link.springer.com/article/10.1007/s00035-024-00317-9
 
+### **Abstract**
 
-### Data
+Plant reproduction in alpine environments is affected by climate both directly through climate impacts on growth and phenology, and indirectly through impacts on the biotic interactions affecting pollination success. These effects can be highly variable in time and space. In this study we investigated how different abiotic and biotic factors influence reproductive investment and success in populations of Ranunculus acris across an alpine landscape over a two-year period. In an alpine area at Finse, southern Norway, we measured reproductive investment (total seed mass) and reproductive success (seed-set rate) in 38 sites differing in temperature (related to elevation) and length of the growing season (related to time of snowmelt). To assess biotic interactions, we measured floral density and pollinator visits and conducted a supplemental pollen experiment. Reproductive investment and success increased with temperature, but only when floral density and/or number of pollinator visits was high, and only in the warmer year (2016). Reproduction in R. acris was pollen-limited in both years, especially at warmer temperature and in sites with early snowmelt. Pollinator visits increased with temperature and with higher floral density, suggesting a shift in relative importance of the biotic factors (from plants to pollinators) in limiting reproduction with increasing temperature. Our study shows that reproductive investment and success in R. acris is affected by climate through the interactive effects of abiotic and biotic processes. These effects vary between years and across the landscape, suggesting a potential for larger-scale buffering of climate change effects in heterogeneous landscapes.
+
+#### Data
 The data is stored on OSF: https://osf.io/gw39z/
-
-### R code
-This repo contains the code to analyse the data for
-
-Silje Andrea Hjortland Östman's master thesis (University of Bergen), 2018, Plant-pollinator interactions in the alpine: Landscape heterogeneity acts as a potential buffer against climate-change induced mismatch in the pollinator-generalist Ranunculus acris.
-
-Roos et al. 20XX, Finse paper.
-
-The R code to download the data, import, curate and analyse plant and pollinator interactions and reproductive output is in this GitHub repo in the R folder.
